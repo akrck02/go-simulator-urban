@@ -1,0 +1,4 @@
+.geos-local/
+captura.png
+*.test
+*.out
