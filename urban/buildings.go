@@ -53,7 +53,7 @@ func coverageOf(parcel *Parcel) float64 {
 	if parcel.SquareMetres <= 0 {
 		return 0
 	}
-	return math.Min(1, parcel.Front*parcel.BuildingDepth*1e6/parcel.SquareMetres)
+	return math.Min(1, parcel.Front*(parcel.BuildingDepth+parcel.BackDepth)*1e6/parcel.SquareMetres)
 }
 
 // floorLimits gives the floors each plot may reach this year: the usual maximum, or the rare

@@ -101,6 +101,16 @@ func (parcel *Parcel) Footprint() *geos.Geom {
 		centre.Add(parcel.Direction.Scale(far)).Add(parcel.Normal.Scale(start + depth)),
 		centre.Subtract(parcel.Direction.Scale(far)).Add(parcel.Normal.Scale(start + depth)),
 	})
+	built := parcel.Polygon.Intersection(strip)
+	if parcel.BackDepth > 0 {
+		back := start + parcel.Depth - parcel.BackDepth
+		built = built.Union(parcel.Polygon.Intersection(polygonGeometry([]Point{
+			centre.Subtract(parcel.Direction.Scale(far)).Add(parcel.Normal.Scale(back)),
+			centre.Add(parcel.Direction.Scale(far)).Add(parcel.Normal.Scale(back)),
+			centre.Add(parcel.Direction.Scale(far)).Add(parcel.Normal.Scale(start + parcel.Depth)),
+			centre.Subtract(parcel.Direction.Scale(far)).Add(parcel.Normal.Scale(start + parcel.Depth)),
+		})))
+	}
 	// a thin inset keeps neighbouring houses apart without a gap: they share walls in a row
-	return parcel.Polygon.Intersection(strip).BufferWithStyle(-0.0001, 8, geos.BufCapStyleFlat, geos.BufJoinStyleMitre, 5)
+	return built.BufferWithStyle(-0.0001, 8, geos.BufCapStyleFlat, geos.BufJoinStyleMitre, 5)
 }

@@ -54,7 +54,7 @@ func (city *City) densifyBy(wanted float64) float64 {
 	limit := max(1, int(advancingShare*float64(len(city.Parcels))))
 	for _, parcel := range candidates[:min(limit, len(candidates))] {
 		before := parcel.BuiltSquareMetres()
-		city.advance(parcel)
+		city.advance(parcel, city.floorCapAt(parcel.Centre, limits.forPressure(pressures[parcel])))
 		gained += parcel.BuiltSquareMetres() - before
 		if gained >= wanted {
 			break
@@ -81,20 +81,26 @@ func (city *City) densifiableParcels(pressures map[*Parcel]float64, limits floor
 		if !built {
 			continue
 		}
-		if city.canDeepen(parcel) || parcel.Floors < city.floorCapAt(parcel.Centre, limits.forPressure(pressure)) {
+		if city.canDeepen(parcel) || parcel.Floors < city.floorCapAt(parcel.Centre, limits.forPressure(pressure)) || city.canBuildAtTheBack(parcel) {
 			candidates = append(candidates, parcel)
 		}
 	}
 	return candidates
 }
 
-// advance moves a plot one step: the house grows towards the back, or gains a floor.
-func (city *City) advance(parcel *Parcel) {
-	if city.canDeepen(parcel) {
+// advance moves a plot one step: the house grows towards the back, gains a floor or, in the dense
+// core, the plot builds at its back.
+func (city *City) advance(parcel *Parcel, cap int) {
+	switch {
+	case city.canDeepen(parcel):
 		city.deepen(parcel)
-		return
+	case parcel.Floors < cap:
+		parcel.Floors++
+	case city.canBuildAtTheBack(parcel):
+		city.buildAtTheBack(parcel)
+	default:
+		parcel.Floors++
 	}
-	parcel.Floors++
 }
 
 // pressureOn is how wanted a plot is: near the centres, inside the wall, on a shopping street.

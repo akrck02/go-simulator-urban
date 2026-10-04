@@ -17,6 +17,7 @@ type OrganicSettings struct {
 	FieldSnapping *float64 `json:"field_snapping"` // chance a street bends to the tensor field when close to it; default 1
 	Continuation  float64  `json:"continuation"`   // how much more likely a street goes on from its end than branches; default 1
 	Closing       float64  `json:"closing"`        // how far ahead (× the piece) a street looks to close a block; default 1.5
+	Infill        float64  `json:"infill"`         // extra want of frontages among built plots, so streets fill before new ones open; default 0
 }
 
 func (settings *OrganicSettings) segment() float64 { return positiveOr(settings.Segment, 0.055) }
@@ -59,6 +60,7 @@ type DensitySettings struct {
 	OuterHouseDepth   float64    `json:"outer_house_depth"`   // default 1
 	OuterFloors       int        `json:"outer_floors"`        // most floors in the outskirts; default 1
 	RadiusFactor      float64    `json:"radius_factor"`       // the core's radius, × the growth radius; default 0.6
+	BackBuildingsFrom float64    `json:"back_buildings_from"` // density from which full plots build at the back, round a yard; default 0 (never)
 	Districts         []District `json:"districts"`
 }
 
@@ -119,6 +121,42 @@ func (city *City) houseDepthFactor(point Point) float64 {
 		return city.Scenario.BuildingDepth[1]
 	}
 	return lerp(positiveOr(settings.OuterHouseDepth, 1), positiveOr(settings.CoreHouseDepth, 2), city.densityAt(point))
+}
+
+// infillBonus raises the want of a frontage among built plots (a street fills before new ones open).
+func (city *City) infillBonus(middle Point) float64 {
+	infill := city.organic().Infill
+	if infill <= 0 {
+		return 1
+	}
+	return 1 + infill*math.Min(1, float64(city.parcelCountAround(middle, 1))/infillPlots)
+}
+
+const (
+	infillPlots      = 20     // plots around a frontage from which it counts as fully among built plots
+	smallestYard     = 0.004  // km between the house and the building at the back
+	backShareOfFront = 0.8    // the building at the back is at most this deep, × the front
+	shallowestBack   = 0.0035 // km; shallower buildings at the back are not worth it
+)
+
+// canBuildAtTheBack tells whether a full plot of the dense core can still build at its back.
+func (city *City) canBuildAtTheBack(parcel *Parcel) bool {
+	settings := city.Scenario.Density
+	if settings == nil || settings.BackBuildingsFrom <= 0 || parcel.BackDepth > 0 || parcel.Use == UseExtensive {
+		return false
+	}
+	return city.densityAt(parcel.Centre) >= settings.BackBuildingsFrom && backRoom(parcel) >= shallowestBack
+}
+
+// backRoom is how deep the building at the back of a plot can be.
+func backRoom(parcel *Parcel) float64 {
+	return math.Min(parcel.Front*backShareOfFront, parcel.Depth-parcel.BuildingDepth-smallestYard)
+}
+
+// buildAtTheBack raises the building at the back of a plot.
+func (city *City) buildAtTheBack(parcel *Parcel) {
+	parcel.BackDepth = backRoom(parcel)
+	parcel.Coverage = coverageOf(parcel)
 }
 
 // floorCapAt lowers the floor limit in the outskirts.

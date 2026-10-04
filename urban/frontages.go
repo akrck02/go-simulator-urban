@@ -117,7 +117,7 @@ func (city *City) frontagePriorityOf(identifier int) float64 {
 	if pull, _ := city.riverPull(middle); pull > 0 {
 		priority *= 1 + city.Scenario.River.frontageBonus()*pull
 	}
-	return priority + 0.02*city.random.Float64()
+	return priority*city.infillBonus(middle) + 0.02*city.random.Float64()
 }
 
 // parcelsAlong cuts plots along one side of a street piece, avoiding streets, obstacles, rivers,

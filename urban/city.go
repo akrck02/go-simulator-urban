@@ -31,6 +31,7 @@ type Parcel struct {
 	SquareMetres      float64
 	Coverage          float64 // share of the plot the building covers
 	BuildingDepth     float64 // km, when houses grow by depth from their front (see Scenario.BuildingDepth)
+	BackDepth         float64 // km, the building at the back of the plot, round a yard (see DensitySettings)
 	Floors            int
 	Use               string
 	Year              float64

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"slices"
+	"sort"
 	"strconv"
 
 	"github.com/akrck02/go-simulator/plugin"
@@ -131,7 +132,7 @@ func (city *City) entities() map[string]*world.Entity {
 	for _, parcel := range city.Parcels {
 		if parcel.standing() {
 			add(city.parcelEntity(parcel))
-			if building := city.buildingEntity(parcel); building != nil {
+			for _, building := range city.buildingEntities(parcel) {
 				add(building)
 			}
 		}
@@ -173,8 +174,27 @@ func (city *City) parcelEntity(parcel *Parcel) *world.Entity {
 	return groundEntity(fmt.Sprintf("%s-parcel-%d", city.Name, parcel.Identifier), "parcel", parcel.Polygon, 0, "parcels", colour, 0, properties)
 }
 
-func (city *City) buildingEntity(parcel *Parcel) *world.Entity {
-	footprint := largestPolygon(parcel.CachedFootprint())
+// buildingEntities are the house of a plot and, in the dense core, the building at its back.
+func (city *City) buildingEntities(parcel *Parcel) []*world.Entity {
+	pieces := polygonsOf(parcel.CachedFootprint())
+	sort.SliceStable(pieces, func(first, second int) bool { return pieces[first].Area() > pieces[second].Area() })
+	if parcel.BackDepth <= 0 && len(pieces) > 1 {
+		pieces = pieces[:1]
+	}
+	var entities []*world.Entity
+	for index, piece := range pieces[:min(2, len(pieces))] {
+		suffix := ""
+		if index > 0 {
+			suffix = "-back"
+		}
+		if entity := city.buildingEntity(parcel, piece, suffix); entity != nil {
+			entities = append(entities, entity)
+		}
+	}
+	return entities
+}
+
+func (city *City) buildingEntity(parcel *Parcel, footprint *geos.Geom, suffix string) *world.Entity {
 	if footprint == nil || footprint.Area() == 0 {
 		return nil
 	}
@@ -183,7 +203,7 @@ func (city *City) buildingEntity(parcel *Parcel) *world.Entity {
 	if !known {
 		colour = colours[UseHousing]
 	}
-	return groundEntity(fmt.Sprintf("%s-building-%d", city.Name, parcel.Identifier), "building", footprint, height, "buildings", colour, 0,
+	return groundEntity(fmt.Sprintf("%s-building-%d%s", city.Name, parcel.Identifier, suffix), "building", footprint, height, "buildings", colour, 0,
 		map[string]any{"use": parcel.Use, "floors": parcel.Floors, "parcel": parcel.Identifier})
 }
 
