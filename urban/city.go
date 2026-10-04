@@ -6,6 +6,7 @@ import (
 	"math"
 	"math/rand/v2"
 	"os"
+	"slices"
 
 	"github.com/akrck02/go-simulator/plugin"
 	"github.com/twpayne/go-geos"
@@ -300,17 +301,23 @@ func (city *City) storeParcel(parcel *Parcel) {
 	}
 }
 
-// parcelsNear returns the polygons of the parcels whose cells touch a box.
+// parcelsNear returns the polygons of the parcels whose cells touch a box, in the order the
+// parcels were made (a fixed order keeps runs repeatable: geometry is cut in this order).
 func (city *City) parcelsNear(minimum, maximum Point) []*geos.Geom {
 	seen := map[int]bool{}
-	var polygons []*geos.Geom
+	var identifiers []int
 	for _, cell := range cellsAround(minimum, maximum, 0) {
 		for identifier := range city.parcelCells[cell] {
 			if !seen[identifier] {
 				seen[identifier] = true
-				polygons = append(polygons, city.Parcels[identifier].Polygon)
+				identifiers = append(identifiers, identifier)
 			}
 		}
+	}
+	slices.Sort(identifiers)
+	polygons := make([]*geos.Geom, 0, len(identifiers))
+	for _, identifier := range identifiers {
+		polygons = append(polygons, city.Parcels[identifier].Polygon)
 	}
 	return polygons
 }

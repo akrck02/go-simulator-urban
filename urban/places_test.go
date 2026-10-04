@@ -421,3 +421,19 @@ func TestARiverShapesItsTown(t *testing.T) {
 		t.Fatalf("mills and workshops should gather by the water")
 	}
 }
+
+// TestRunsAreRepeatable grows the same place twice: the same scenario must give the same town, so a
+// version the author approves can be made again.
+func TestRunsAreRepeatable(t *testing.T) {
+	current := places()[0]
+	var summaries []string
+	for range 2 {
+		directory := t.TempDir()
+		writePlace(t, directory, current)
+		_, indicators := growPlace(t, directory, current)
+		summaries = append(summaries, summary(indicators))
+	}
+	if summaries[0] != summaries[1] {
+		t.Errorf("two runs differ:\n%s\n%s", summaries[0], summaries[1])
+	}
+}

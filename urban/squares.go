@@ -84,7 +84,7 @@ func (city *City) squareCandidates() []squareCandidate {
 // busyness is the local integration of the streets meeting at a node (or their number, before space syntax runs).
 func (city *City) busyness(node int) float64 {
 	total := 0.0
-	for neighbour := range city.Network.neighbours[node] {
+	for _, neighbour := range city.Network.sortedNeighbours(node) { // a fixed order: repeatable sums
 		for _, identifier := range city.Network.EdgesNear(city.Network.Nodes[node], city.Network.Nodes[node], 0.001) {
 			edge := city.Network.Edges[identifier]
 			if (edge.From == node && edge.To == neighbour) || (edge.To == node && edge.From == neighbour) {
