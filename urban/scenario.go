@@ -34,6 +34,7 @@ type Scenario struct {
 	Grid                  []GridZone       `json:"grid"`
 	MaximumFloors         []FloorLimit     `json:"max_floors"`
 	FirstWall             FirstWall        `json:"first_wall"`
+	WallRise              *WallRise        `json:"wall_rise"` // the wall grows in height over the years; nil = 11 m from the start
 	NewWallWhenOutside    float64          `json:"new_wall_when_outside"`
 	SquareMetresPerPerson float64          `json:"square_metres_per_person"`
 	Seed                  uint64           `json:"seed"`
@@ -108,6 +109,24 @@ type RareFloors struct {
 type FirstWall struct {
 	Year       *float64 `json:"year"`
 	Population float64  `json:"population"`
+}
+
+// WallRise raises a wall in phases: "from" metres the year it goes up, then evenly up to "height"
+// metres after "years" years.
+//
+//	wall_rise: {from: 6, height: 30, years: 30}
+type WallRise struct {
+	From   float64 `json:"from"`
+	Height float64 `json:"height"`
+	Years  float64 `json:"years"`
+}
+
+// HeightAfter is the wall's height (metres) some years after it went up.
+func (rise WallRise) HeightAfter(years float64) float64 {
+	if rise.Years <= 0 || years >= rise.Years {
+		return rise.Height
+	}
+	return rise.From + (rise.Height-rise.From)*math.Max(0, years)/rise.Years
 }
 
 // scenarioFrom reads the scenario from the city rule's parameters and fills in the defaults.

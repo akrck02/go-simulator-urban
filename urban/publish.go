@@ -214,12 +214,22 @@ func (city *City) addWallEntities(add func(*world.Entity)) {
 			identifier := fmt.Sprintf("%s-wall-%d-%d", city.Name, index, part)
 			properties := map[string]any{"year": wall.Year, "current": current}
 			if current {
-				add(lineEntity(identifier, "wall", coordinatesOf(line), wallWidth, city.metres(wallHeight), "walls", colours["wall"], properties))
+				height := city.wallHeightOf(wall.Year)
+				properties["height_m"] = height
+				add(lineEntity(identifier, "wall", coordinatesOf(line), wallWidth, city.metres(height), "walls", colours["wall"], properties))
 			} else {
 				add(lineEntity(identifier, "old_wall", coordinatesOf(line), oldWallWidth, 0, "old_walls", colours["old_wall"], properties))
 			}
 		}
 	}
+}
+
+// wallHeightOf is how tall (metres) a wall raised in a year stands now.
+func (city *City) wallHeightOf(year float64) float64 {
+	if city.Scenario.WallRise == nil {
+		return wallHeight
+	}
+	return city.Scenario.WallRise.HeightAfter(city.Year - year)
 }
 
 // metres turns a height in metres into world units, exaggerated like the rest of the scene.

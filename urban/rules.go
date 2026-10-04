@@ -75,6 +75,7 @@ func cityRule(registry *cities) plugin.Definition {
 				{Name: "grid", Type: "list", Summary: "[{from_year, angle_degrees, area}]"},
 				{Name: "max_floors", Type: "list", Summary: "[{before, floors}, …, {floors}]"},
 				{Name: "first_wall", Type: "map", Summary: "{year, population}"},
+				{Name: "wall_rise", Type: "map", Summary: "{from, height, years}: the wall grows in height over the years (metres)"},
 				{Name: "nucleus", Type: "vector", Summary: "[x, z] of the first village's square"},
 				{Name: "new_wall_when_outside", Type: "number", Default: 0.3},
 				{Name: "square_metres_per_person", Type: "number", Default: 30},

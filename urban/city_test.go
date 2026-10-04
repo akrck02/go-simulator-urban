@@ -166,3 +166,12 @@ func TestSquareHousesRareFloorsAndAGivenWall(t *testing.T) {
 		}
 	}
 }
+
+func TestWallRisesInPhases(t *testing.T) {
+	rise := WallRise{From: 6, Height: 30, Years: 30}
+	for _, check := range []struct{ years, want float64 }{{0, 6}, {15, 18}, {30, 30}, {50, 30}, {-2, 6}} {
+		if got := rise.HeightAfter(check.years); math.Abs(got-check.want) > 1e-9 {
+			t.Errorf("after %v years: %v m, want %v", check.years, got, check.want)
+		}
+	}
+}
