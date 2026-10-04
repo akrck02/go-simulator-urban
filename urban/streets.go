@@ -297,6 +297,27 @@ func (city *City) crossesObstacles(piece Segment) bool {
 	return segmentGeometry(piece).Intersects(city.Obstacles)
 }
 
+// crossesHouses tells whether a street of this width along a piece would run over a standing
+// house: a new street may cut through gardens, not through houses.
+func (city *City) crossesHouses(piece Segment, width float64) bool {
+	minimum, maximum := boxOf(piece)
+	street := segmentGeometry(piece).Buffer(width/2, 2)
+	seen := map[int]bool{}
+	for _, cell := range cellsAround(minimum, maximum, width) {
+		for identifier := range city.parcelCells[cell] {
+			parcel := city.Parcels[identifier]
+			if seen[identifier] || !parcel.standing() || parcel.Use == UseExtensive {
+				continue
+			}
+			seen[identifier] = true
+			if footprint := parcel.CachedFootprint(); !footprint.IsEmpty() && footprint.Intersects(street) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // riverCrossing allows short bridges, now and then.
 func (city *City) riverCrossing(piece Segment) (bridge, allowed bool) {
 	line := segmentGeometry(piece)
@@ -376,7 +397,7 @@ func (city *City) crossingsOf(node int, piece Segment) []crossing {
 func (city *City) buildStreet(node, destination int, bridge bool) bool {
 	origin, end := city.Network.Nodes[node], city.Network.Nodes[destination]
 	final := Segment{origin, end}
-	if final.Length() < shortestStreet || city.crossesObstacles(final) {
+	if final.Length() < shortestStreet || city.crossesObstacles(final) || city.crossesHouses(final, widthOf(ClassStreet)) {
 		return false
 	}
 	angle := origin.AngleTo(end)
