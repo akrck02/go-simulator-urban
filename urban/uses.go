@@ -101,5 +101,6 @@ func (parcel *Parcel) Footprint() *geos.Geom {
 		centre.Add(parcel.Direction.Scale(far)).Add(parcel.Normal.Scale(start + depth)),
 		centre.Subtract(parcel.Direction.Scale(far)).Add(parcel.Normal.Scale(start + depth)),
 	})
-	return parcel.Polygon.Intersection(strip).BufferWithStyle(-0.0004, 8, geos.BufCapStyleFlat, geos.BufJoinStyleMitre, 5)
+	// a thin inset keeps neighbouring houses apart without a gap: they share walls in a row
+	return parcel.Polygon.Intersection(strip).BufferWithStyle(-0.0001, 8, geos.BufCapStyleFlat, geos.BufJoinStyleMitre, 5)
 }

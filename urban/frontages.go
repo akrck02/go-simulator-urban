@@ -13,7 +13,8 @@ import (
 
 const (
 	perch             = 0.00503 // km
-	frontageMargin    = 0.008   // free ground left at each end of a street piece
+	frontageMargin    = 0.008   // free ground left at each end of a street piece, at crossings and dead ends
+	bendMargin        = 0.0015  // free ground left where a street only bends
 	shortestFrontage  = 0.015
 	frontagesPerRound = 12
 	wantedFrontage    = 0.3 // frontages less wanted than this wait: a street nearby opens first
@@ -130,9 +131,10 @@ func (city *City) parcelsAlong(side frontage) []*Parcel {
 	inBelt := city.Belts.Contains(pointGeometry(segment.Middle()))
 	forbidden := city.forbiddenAround(segment)
 	var parcels []*Parcel
-	for position := frontageMargin; position < length-frontageMargin; {
+	startMargin, endMargin := city.marginAt(edge.From), city.marginAt(edge.To)
+	for position := startMargin; position < length-endMargin; {
 		front, depth, use, coverage := city.plotSize(inBelt, segment.From.Add(direction.Scale(position)))
-		front = math.Min(front, length-frontageMargin-position)
+		front = math.Min(front, length-endMargin-position)
 		if front < perch*0.8 {
 			break
 		}
@@ -153,6 +155,16 @@ func (city *City) parcelsAlong(side frontage) []*Parcel {
 		forbidden.add(piece)
 	}
 	return parcels
+}
+
+// marginAt is the free ground a frontage leaves at a node: room for the corner at a crossing or a
+// dead end, little where the street only bends and the row of houses goes on (plots that would
+// overlap on the inner side of the bend are cut by fitPlot).
+func (city *City) marginAt(node int) float64 {
+	if city.Network.Degree(node) == 2 {
+		return bendMargin
+	}
+	return frontageMargin
 }
 
 // plotSize draws the size of the next plot.
