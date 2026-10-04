@@ -23,6 +23,19 @@ const (
 	wallClearance     = 0.012
 )
 
+// bestFreeFrontage is the priority of the most wanted free frontage (0 when there is none).
+func (city *City) bestFreeFrontage() float64 {
+	city.refreshYearlyWeights()
+	best := 0.0
+	for _, side := range city.freeFrontages() {
+		if _, known := city.frontagePriority[side.edge]; !known {
+			city.frontagePriority[side.edge] = city.frontagePriorityOf(side.edge)
+		}
+		best = math.Max(best, city.frontagePriority[side.edge])
+	}
+	return best
+}
+
 // buildFrontages lays plots on the most wanted free frontages until the floor space wanted is
 // covered; it returns the floor space gained.
 func (city *City) buildFrontages(wanted float64) float64 {
@@ -97,8 +110,11 @@ func (city *City) frontagePriorityOf(identifier int) float64 {
 	if city.insideTheWall(middle) {
 		priority *= 1.5
 	}
-	if edge.Class == ClassRoad || edge.Class == ClassMain {
+	if edge.Class == ClassRoad || edge.Class == ClassMain || edge.Class == ClassQuay {
 		priority *= 1.3
+	}
+	if pull, _ := city.riverPull(middle); pull > 0 {
+		priority *= 1 + city.Scenario.River.frontageBonus()*pull
 	}
 	return priority + 0.02*city.random.Float64()
 }
@@ -131,6 +147,8 @@ func (city *City) parcelsAlong(side frontage) []*Parcel {
 		parcel := &Parcel{Polygon: piece, Centre: centroidOf(piece), Edge: side.edge, Front: front, Depth: depth,
 			Direction: direction, Normal: normal, SquareMetres: piece.Area() * 1e6, Coverage: coverage,
 			Floors: city.firstFloors(), Use: use, Year: city.Year}
+		city.startBuilding(parcel)
+		city.waterfrontUse(parcel)
 		parcels = append(parcels, parcel)
 		forbidden.add(piece)
 	}

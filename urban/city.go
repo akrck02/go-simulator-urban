@@ -29,7 +29,8 @@ type Parcel struct {
 	Front, Depth      float64 // km
 	Direction, Normal Point   // along the street; from the street into the plot
 	SquareMetres      float64
-	Coverage          float64 // share of the plot the building covers (0.3 → 0.7)
+	Coverage          float64 // share of the plot the building covers
+	BuildingDepth     float64 // km, when houses grow by depth from their front (see Scenario.BuildingDepth)
 	Floors            int
 	Use               string
 	Year              float64
@@ -89,7 +90,9 @@ type City struct {
 	Scenario                               *Scenario
 	Terrain                                *Terrain
 	Window, Obstacles, Rivers, WallSupport *geos.Geom
+	RiverAxes                              []*riverAxis
 	ClearArea                              *geos.Geom // where the drawn scene's old content gives way to the simulated city
+	WallOutline                            *geos.Geom // the shape the wall has when it goes up, when it is given (it is the only wall)
 	Network                                *Network
 	Parcels                                []*Parcel
 	Walls                                  []*Wall
@@ -116,7 +119,7 @@ func newCity(name string, scenario *Scenario) (*City, error) {
 		return nil, err
 	}
 	city := &City{Name: name, Scenario: scenario, Terrain: terrain, Network: NewNetwork(), Belts: emptyGeometry(),
-		Window: emptyGeometry(), Obstacles: emptyGeometry(), Rivers: emptyGeometry(), WallSupport: emptyGeometry(), ClearArea: emptyGeometry(),
+		Window: emptyGeometry(), Obstacles: emptyGeometry(), Rivers: emptyGeometry(), WallSupport: emptyGeometry(), ClearArea: emptyGeometry(), WallOutline: emptyGeometry(),
 		random: rand.New(rand.NewPCG(scenario.Seed, 0x5eed)), parcelCells: map[cellKey]map[int]bool{},
 		frontagesDone: map[frontage]bool{}, published: map[string]string{}, weightsYear: math.NaN()}
 	if scenario.Features != "" {
@@ -150,6 +153,11 @@ func (city *City) loadFeatures(path string) error {
 		if err != nil {
 			return fmt.Errorf("%s, feature %d: %w", path, index, err)
 		}
+		if feature.Properties["role"] == "river" {
+			width, _ := feature.Properties["width"].(float64)
+			city.addRiver(geometry, positiveOr(width, 0.02))
+			continue
+		}
 		if err := city.useFeature(feature.Properties["role"], valid(geometry)); err != nil {
 			return fmt.Errorf("%s, feature %d: %w", path, index, err)
 		}
@@ -169,12 +177,14 @@ func (city *City) useFeature(role any, geometry *geos.Geom) error {
 		city.WallSupport = unionOf(city.WallSupport, geometry)
 	case "clear":
 		city.ClearArea = unionOf(city.ClearArea, geometry)
+	case "wall_outline":
+		city.WallOutline = unionOf(city.WallOutline, geometry)
 	case "road":
 		for _, line := range linesOf(geometry) {
 			city.Network.AddPath(coordinatesOf(line), ClassRoad, math.Inf(-1), 0.04)
 		}
 	default:
-		return fmt.Errorf("unknown role %v (known: window, obstacles, rivers, wall_support, road, clear)", role)
+		return fmt.Errorf("unknown role %v (known: window, obstacles, rivers, wall_support, road, river, clear, wall_outline)", role)
 	}
 	return nil
 }
@@ -330,6 +340,9 @@ func (city *City) removeParcelsIn(zone *geos.Geom) {
 		if piece := largestPolygon(rest); piece != nil {
 			parcel.Polygon = valid(piece)
 			parcel.SquareMetres = parcel.Polygon.Area() * 1e6
+			if parcel.BuildingDepth > 0 {
+				parcel.Coverage = coverageOf(parcel)
+			}
 		}
 	}
 }

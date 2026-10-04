@@ -14,12 +14,15 @@ import (
 //	nucleus:     [0, 0]             # the crossroads of the first village
 //	population:  {model: logistic, from_year: 0, from: 300, to_year: 100, to: 6000, ceiling: 8000}
 //	centres:     [{at: [0, 0], weight: 1}, {at: [0.3, 0.8], weight: 0.9, grows_from: 30, grows_for: 40}]
-//	grid:        [{from_year: 40, angle_degrees: 20, area: [[x, z], ...]}]
+//	grid:        [{from_year: 40, angle_degrees: 20, area: [[x, z], ...], block: 0.08}]
 //	max_floors:  [{before: 40, floors: 2}, {before: 80, floors: 3}, {floors: 4}]
 //	first_wall:  {year: 60, population: 3000}
 //	new_wall_when_outside: 0.3
 //	square_metres_per_person: 30
 //	seed: 7
+//	open_streets_below: 0.5                 # 0.3: street villages; higher: compact towns with back streets
+//	rare_floors: {floors: 3, share: 0.05}   # only the most wanted 5 % of plots reach 3 floors
+//	building_depth: [1, 1.5]                # houses nearly square: 1 to 1.5 times as deep as their front
 //	clear_nodes: [buildings, grounds, paths]   # what the drawn scene had where the city grows
 //	tree_nodes:  [broadleaf forest, laurel forest]
 type Scenario struct {
@@ -34,9 +37,13 @@ type Scenario struct {
 	NewWallWhenOutside    float64         `json:"new_wall_when_outside"`
 	SquareMetresPerPerson float64         `json:"square_metres_per_person"`
 	Seed                  uint64          `json:"seed"`
-	HeightScale           float64         `json:"height_scale"` // how much buildings are exaggerated in 3D (1 = true height)
-	ClearNodes            []string        `json:"clear_nodes"`  // scene nodes cleared under the "clear" features when the city starts
-	TreeNodes             []string        `json:"tree_nodes"`   // scene nodes of trees, cleared there too and under every new plot
+	HeightScale           float64         `json:"height_scale"`       // how much buildings are exaggerated in 3D (1 = true height)
+	OpenStreetsBelow      float64         `json:"open_streets_below"` // a town opens streets before building on frontages less wanted than this
+	River                 *RiverSettings  `json:"river"`              // rivers shape the town (see river.go)
+	RareFloors            *RareFloors     `json:"rare_floors"`        // a few of the most wanted plots may go higher
+	BuildingDepth         *[2]float64     `json:"building_depth"`     // houses as deep as [from, to] times their front; nil = coverage 0.4 → 0.7
+	ClearNodes            []string        `json:"clear_nodes"`        // scene nodes cleared under the "clear" features when the city starts
+	TreeNodes             []string        `json:"tree_nodes"`         // scene nodes of trees, cleared there too and under every new plot
 }
 
 // PopulationCurve gives the number of inhabitants each year.
@@ -62,12 +69,36 @@ type GridZone struct {
 	FromYear     float64      `json:"from_year"`
 	AngleDegrees float64      `json:"angle_degrees"`
 	Area         [][2]float64 `json:"area"`
+	Block        float64      `json:"block"` // side of the blocks (km); streets run along the lattice (default 0.08)
+}
+
+// blockSide is the side of the zone's blocks.
+func (zone GridZone) blockSide() float64 {
+	if zone.Block > 0 {
+		return zone.Block
+	}
+	return 0.08
+}
+
+// snap moves a point to the nearest lattice node of the zone (the lattice goes through the origin).
+func (zone GridZone) snap(point Point) Point {
+	angle := zone.AngleDegrees * math.Pi / 180
+	cosine, sine, side := math.Cos(angle), math.Sin(angle), zone.blockSide()
+	along, across := point.X*cosine+point.Z*sine, -point.X*sine+point.Z*cosine
+	along, across = math.Round(along/side)*side, math.Round(across/side)*side
+	return Point{along*cosine - across*sine, along*sine + across*cosine}
 }
 
 // FloorLimit is the maximum number of floors before a year (the last one, without "before", holds after).
 type FloorLimit struct {
 	Before *float64 `json:"before"`
 	Floors int      `json:"floors"`
+}
+
+// RareFloors lets the most wanted share of plots reach more floors than the usual maximum.
+type RareFloors struct {
+	Floors int     `json:"floors"`
+	Share  float64 `json:"share"`
 }
 
 // FirstWall says when the first wall goes up: at a population or, at the latest, in a year.
@@ -93,6 +124,9 @@ func scenarioFrom(parameters map[string]any) (*Scenario, error) {
 func (scenario *Scenario) fillDefaults() {
 	if scenario.NewWallWhenOutside <= 0 {
 		scenario.NewWallWhenOutside = 0.3
+	}
+	if scenario.OpenStreetsBelow <= 0 {
+		scenario.OpenStreetsBelow = wantedFrontage
 	}
 	if scenario.SquareMetresPerPerson <= 0 {
 		scenario.SquareMetresPerPerson = 30

@@ -30,6 +30,9 @@ func (city *City) expand() {
 	streetLimit := 6 + int(0.04*float64(len(city.Network.Edges)))
 	for city.Deficit > 0 && attempts < 40 {
 		attempts++
+		if streetsThisYear < streetLimit && city.bestFreeFrontage() < city.Scenario.OpenStreetsBelow {
+			streetsThisYear += city.growStreets(min(streetLimit-streetsThisYear, 3+int(city.Deficit/20000)))
+		}
 		gained := city.buildFrontages(city.Deficit)
 		city.Deficit -= gained
 		if gained > 0 {
@@ -199,6 +202,9 @@ func (city *City) fieldAxis(point Point) (float64, float64) {
 	if zone, planned := city.gridZoneAt(point); planned {
 		components = append(components, component{zone.AngleDegrees * math.Pi / 180, 1.2})
 	}
+	if pull, direction := city.riverPull(point); pull > 0.01 {
+		components = append(components, component{direction, city.Scenario.River.alignment() * pull})
+	}
 	sumCosine, sumSine, sumWeight := 0.0, 0.0, 0.0
 	for _, part := range components {
 		sumCosine += part.weight * math.Cos(2*part.angle)
@@ -213,14 +219,11 @@ func (city *City) fieldAxis(point Point) (float64, float64) {
 
 // tryStreet proposes a street from a node and builds it if it passes the legality tests.
 func (city *City) tryStreet(node int) bool {
-	direction, organic := city.proposedDirection(node)
-	meanLength := 0.08
-	if organic {
-		meanLength = 0.055
-	}
-	length := math.Max(0.02, meanLength+0.015*city.random.NormFloat64())
 	origin := city.Network.Nodes[node]
-	end := origin.Towards(direction, length)
+	end, direction, length := city.proposedEnd(node)
+	if city.Terrain.Slope(end.X, end.Z) > steepestPlot {
+		return false // nothing could be built along it
+	}
 	if !city.Window.Contains(pointGeometry(end)) {
 		return false
 	}
@@ -241,6 +244,23 @@ func (city *City) tryStreet(node int) bool {
 		return false
 	}
 	return city.buildStreet(node, destination, bridge)
+}
+
+// proposedEnd is where a new street from a node wants to end: organic streets go some random length
+// in the proposed direction; in a planned zone they run along the lattice, one block long, and end
+// on a lattice node.
+func (city *City) proposedEnd(node int) (Point, float64, float64) {
+	origin := city.Network.Nodes[node]
+	if zone, planned := city.gridZoneAt(origin); planned {
+		base := city.baseDirection(city.Network.Directions(node))
+		axis := zone.AngleDegrees * math.Pi / 180
+		direction := closestAngle([]float64{axis, axis + math.Pi/2, axis + math.Pi, axis - math.Pi/2}, base)
+		end := zone.snap(origin.Towards(direction, zone.blockSide()))
+		return end, origin.AngleTo(end), origin.DistanceTo(end)
+	}
+	direction, _ := city.proposedDirection(node)
+	length := math.Max(0.02, 0.055+0.015*city.random.NormFloat64())
+	return origin.Towards(direction, length), direction, length
 }
 
 // followContourIfSteep: on a steep slope the street turns to the contour line, or gives up when
@@ -268,7 +288,8 @@ func (city *City) riverCrossing(piece Segment) (bridge, allowed bool) {
 	if !line.Intersects(city.Rivers) {
 		return false, true
 	}
-	if line.Intersection(city.Rivers).Length() > longestBridge || city.random.Float64() > bridgeChance {
+	wet := line.Intersection(city.Rivers)
+	if wet.Length() > city.longestBridge() || city.random.Float64() > city.bridgeChance() || !city.bridgeFits(piece, centroidOf(wet)) {
 		return false, false
 	}
 	return true, true

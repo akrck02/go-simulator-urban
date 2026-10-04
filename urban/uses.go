@@ -90,6 +90,9 @@ func (parcel *Parcel) Footprint() *geos.Geom {
 		base = math.Min(base, corner.Dot(parcel.Normal))
 	}
 	depth := parcel.Depth * math.Min(1, parcel.Coverage/fullCoverage*0.85+0.15)
+	if parcel.BuildingDepth > 0 {
+		depth = parcel.BuildingDepth
+	}
 	centre := centroidOf(parcel.Polygon)
 	start := base - centre.Dot(parcel.Normal)
 	strip := polygonGeometry([]Point{

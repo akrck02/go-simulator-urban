@@ -31,7 +31,7 @@ const (
 var colours = map[string][4]float32{
 	"garden": linear("#c3c29a"), UseExtensive: linear("#9aa37a"), UseHousing: linear("#b86f52"), UseShop: linear("#c98f6e"),
 	UseWorkshop: linear("#6b5a4c"), "street": linear("#e9e0c8"), "wall": linear("#fbf8f0"), "square": linear("#efe7d1"),
-	"old_wall": linear("#d9cfb5"), "bridge": linear("#efe7d2"),
+	"old_wall": linear("#d9cfb5"), "bridge": linear("#efe7d2"), "water": linear("#6fa3bf"),
 }
 
 // linear turns an sRGB hex colour into linear RGBA, the colour space glTF scenes use.
@@ -140,6 +140,10 @@ func (city *City) entities() map[string]*world.Entity {
 	for index, square := range city.Squares {
 		add(groundEntity(fmt.Sprintf("%s-square-%d", city.Name, index), "square", square, 0, "squares", colours["square"], squareLift, nil))
 	}
+	for index, axis := range city.RiverAxes {
+		add(lineEntity(fmt.Sprintf("%s-river-%d", city.Name, index), "river", coordinatesOf(axis.line), axis.width, 0, "water", colours["water"],
+			map[string]any{"width": axis.width}))
+	}
 	for index, bridge := range city.Bridges {
 		add(lineEntity(fmt.Sprintf("%s-bridge-%d", city.Name, index), "bridge", []Point{bridge.From, bridge.To}, bridgeWidth, 0, "bridges", colours["bridge"], nil))
 	}
@@ -163,6 +167,9 @@ func (city *City) parcelEntity(parcel *Parcel) *world.Entity {
 	}
 	properties := map[string]any{"use": parcel.Use, "coverage": parcel.Coverage, "floors": parcel.Floors, "year": parcel.Year,
 		"front": parcel.Front, "depth": parcel.Depth, "street": parcel.Edge, "square_metres": parcel.SquareMetres}
+	if parcel.BuildingDepth > 0 {
+		properties["building_depth"] = parcel.BuildingDepth
+	}
 	return groundEntity(fmt.Sprintf("%s-parcel-%d", city.Name, parcel.Identifier), "parcel", parcel.Polygon, 0, "parcels", colour, 0, properties)
 }
 

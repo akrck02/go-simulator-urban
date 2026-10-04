@@ -1,7 +1,6 @@
 package urban
 
 import (
-	"math"
 	"sort"
 )
 
@@ -13,7 +12,7 @@ import (
 const (
 	firstCoverage  = 0.4
 	fullCoverage   = 0.7
-	coverageStep   = 0.1
+	coverageStep   = 0.1 // default growth (see buildings.go)
 	advancingShare = 0.25
 )
 
@@ -25,6 +24,7 @@ func (city *City) startYear(year float64) {
 		nucleus := Point{city.Scenario.Nucleus[0], city.Scenario.Nucleus[1]}
 		city.Squares = append(city.Squares, pointGeometry(nucleus).Buffer(0.018, 8))
 	}
+	city.layQuays()
 	demand := city.Population() * city.Scenario.SquareMetresPerPerson
 	city.Deficit = demand - city.BuiltSquareMetres()
 }
@@ -46,18 +46,15 @@ func (city *City) densifyBy(wanted float64) float64 {
 	if len(city.Parcels) == 0 {
 		return 0
 	}
-	maximumFloors := city.Scenario.FloorsIn(city.Year)
-	candidates := city.densifiableParcels(maximumFloors)
-	pressures := make(map[*Parcel]float64, len(candidates))
-	for _, parcel := range candidates {
-		pressures[parcel] = city.pressureOn(parcel)
-	}
+	pressures := city.pressures()
+	limits := city.floorLimitsNow(pressures)
+	candidates := city.densifiableParcels(pressures, limits)
 	sort.SliceStable(candidates, func(first, second int) bool { return pressures[candidates[first]] > pressures[candidates[second]] })
 	gained := 0.0
 	limit := max(1, int(advancingShare*float64(len(city.Parcels))))
 	for _, parcel := range candidates[:min(limit, len(candidates))] {
 		before := parcel.BuiltSquareMetres()
-		advance(parcel)
+		city.advance(parcel)
 		gained += parcel.BuiltSquareMetres() - before
 		if gained >= wanted {
 			break
@@ -66,23 +63,35 @@ func (city *City) densifyBy(wanted float64) float64 {
 	return gained
 }
 
-func (city *City) densifiableParcels(maximumFloors int) []*Parcel {
+// pressures is how wanted every built plot is this year.
+func (city *City) pressures() map[*Parcel]float64 {
+	pressures := map[*Parcel]float64{}
+	for _, parcel := range city.Parcels {
+		if parcel.Use != UseExtensive && parcel.standing() {
+			pressures[parcel] = city.pressureOn(parcel)
+		}
+	}
+	return pressures
+}
+
+func (city *City) densifiableParcels(pressures map[*Parcel]float64, limits floorLimits) []*Parcel {
 	var candidates []*Parcel
 	for _, parcel := range city.Parcels {
-		if parcel.Use == UseExtensive || !parcel.standing() {
+		pressure, built := pressures[parcel]
+		if !built {
 			continue
 		}
-		if parcel.Coverage < fullCoverage || parcel.Floors < maximumFloors {
+		if city.canDeepen(parcel) || parcel.Floors < limits.forPressure(pressure) {
 			candidates = append(candidates, parcel)
 		}
 	}
 	return candidates
 }
 
-// advance moves a plot one step through the burgage cycle.
-func advance(parcel *Parcel) {
-	if parcel.Coverage < fullCoverage {
-		parcel.Coverage = math.Round(math.Min(fullCoverage, parcel.Coverage+coverageStep)*100) / 100
+// advance moves a plot one step: the house grows towards the back, or gains a floor.
+func (city *City) advance(parcel *Parcel) {
+	if city.canDeepen(parcel) {
+		city.deepen(parcel)
 		return
 	}
 	parcel.Floors++

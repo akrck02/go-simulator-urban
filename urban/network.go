@@ -12,10 +12,11 @@ const (
 	ClassRing   = "ring" // ring roads where old walls stood
 	ClassStreet = "street"
 	ClassAlley  = "alley"
+	ClassQuay   = "quay" // along a river bank
 )
 
 // streetWidths are the widths of each class (world units, km).
-var streetWidths = map[string]float64{ClassRoad: 0.008, ClassMain: 0.009, ClassRing: 0.010, ClassStreet: 0.006, ClassAlley: 0.0035}
+var streetWidths = map[string]float64{ClassRoad: 0.008, ClassMain: 0.009, ClassRing: 0.010, ClassStreet: 0.006, ClassAlley: 0.0035, ClassQuay: 0.007}
 
 func widthOf(class string) float64 {
 	if width, known := streetWidths[class]; known {

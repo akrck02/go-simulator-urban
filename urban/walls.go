@@ -30,6 +30,9 @@ func (city *City) wallsIfDue() {
 		}
 		return
 	}
+	if !city.WallOutline.IsEmpty() {
+		return // the wall has its given shape and is the only one
+	}
 	outside, total := city.floorSpaceOutside(wall), city.BuiltSquareMetres()
 	if total <= 0 {
 		total = 1
@@ -85,9 +88,12 @@ func (city *City) raiseWall() {
 	city.removeParcelsIn(line.Buffer(wallClearance, 8))
 }
 
-// wallOutline: the concave hull of what is built and of the old walls, smoothed, tied to the rock
-// when it is close and kept inside the window.
+// wallOutline: the given shape, when there is one; otherwise the concave hull of what is built and
+// of the old walls, smoothed, tied to the rock when it is close and kept inside the window.
 func (city *City) wallOutline(settled *geos.Geom) *geos.Geom {
+	if !city.WallOutline.IsEmpty() {
+		return largestPolygon(city.WallOutline)
+	}
 	parts := []*geos.Geom{settled}
 	for _, wall := range city.Walls {
 		parts = append(parts, wall.Polygon)
