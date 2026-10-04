@@ -339,7 +339,7 @@ func polygonOfShape(shape *world.Shape) *geos.Geom {
 func checkPlace(t *testing.T, current *world.World, directory string, indicators map[string]any) {
 	t.Helper()
 	window := readInputs(t, directory, "window")
-	water := unionOf(readInputs(t, directory, "rivers"), readInputs(t, directory, "obstacles"), riverWater(current))
+	water := valid(unionOf(readInputs(t, directory, "rivers"), readInputs(t, directory, "obstacles"), riverWater(current)))
 	var plots []*geos.Geom
 	plotArea := 0.0
 	for _, parcel := range current.EntitiesOfKind("parcel") {
@@ -353,8 +353,16 @@ func checkPlace(t *testing.T, current *world.World, directory string, indicators
 	if len(plots) == 0 {
 		t.Fatal("nothing was built")
 	}
-	built := unionOf(plots...)
-	if wet := built.Intersection(water).Area(); wet > 0.001*built.Area() {
+	built := valid(unionOf(plots...))
+	wet := 0.0 // plot by plot: the union of thousands of float32 outlines is too fragile to cut at once
+	for _, plot := range plots {
+		if plot.Intersects(water) {
+			if part := plot.Intersection(water); part != nil {
+				wet += part.Area()
+			}
+		}
+	}
+	if wet > 0.001*built.Area() {
 		t.Errorf("%.2f ha of plots stand in water or on obstacles", wet*100)
 	}
 	if overlap := plotArea - built.Area(); overlap > 0.001*plotArea {
