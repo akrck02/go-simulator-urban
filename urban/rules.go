@@ -38,6 +38,7 @@ func Plugin() *plugin.Plugin {
 			yearlyRule(registry, "expand", "Lays plots along free frontages and opens new streets when none are left.", (*City).expand),
 			yearlyRule(registry, "walls", "Raises the first wall and new ones when the suburbs grow too big.", (*City).wallsIfDue),
 			pruneRule(registry), splitRule(registry), syntaxRule(registry), indicatorsRule(registry),
+			yearlyRule(registry, "squares", "Opens irregular squares at busy crossings, inside gates and at bridgeheads (scenario \"squares\").", (*City).openSquares),
 		},
 		AfterStep: func(context *plugin.Context) error {
 			for _, name := range registry.order {

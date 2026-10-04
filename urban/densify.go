@@ -81,7 +81,7 @@ func (city *City) densifiableParcels(pressures map[*Parcel]float64, limits floor
 		if !built {
 			continue
 		}
-		if city.canDeepen(parcel) || parcel.Floors < limits.forPressure(pressure) {
+		if city.canDeepen(parcel) || parcel.Floors < city.floorCapAt(parcel.Centre, limits.forPressure(pressure)) {
 			candidates = append(candidates, parcel)
 		}
 	}

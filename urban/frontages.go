@@ -131,7 +131,7 @@ func (city *City) parcelsAlong(side frontage) []*Parcel {
 	forbidden := city.forbiddenAround(segment)
 	var parcels []*Parcel
 	for position := frontageMargin; position < length-frontageMargin; {
-		front, depth, use, coverage := city.plotSize(inBelt)
+		front, depth, use, coverage := city.plotSize(inBelt, segment.From.Add(direction.Scale(position)))
 		front = math.Min(front, length-frontageMargin-position)
 		if front < perch*0.8 {
 			break
@@ -156,9 +156,13 @@ func (city *City) parcelsAlong(side frontage) []*Parcel {
 }
 
 // plotSize draws the size of the next plot.
-func (city *City) plotSize(inBelt bool) (front, depth float64, use string, coverage float64) {
+func (city *City) plotSize(inBelt bool, place Point) (front, depth float64, use string, coverage float64) {
 	if inBelt {
 		return uniform(city.random, 0.03, 0.06), uniform(city.random, 0.05, 0.08), UseExtensive, 0.25
+	}
+	if city.Scenario.Density != nil {
+		front, depth = city.plotSizeAt(place)
+		return front, depth, UseHousing, firstCoverage
 	}
 	perches := []float64{1.0, 1.5, 1.5, 2.0}[city.random.IntN(4)]
 	return perch * perches, uniform(city.random, 0.03, 0.055), UseHousing, firstCoverage

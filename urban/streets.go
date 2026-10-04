@@ -27,7 +27,7 @@ const (
 // new streets, up to how many streets a city can open in a year.
 func (city *City) expand() {
 	attempts, streetsThisYear := 0, 0
-	streetLimit := 6 + int(0.04*float64(len(city.Network.Edges)))
+	streetLimit := 6 + int(0.04*city.streetLength()/defaultSegment) // grows with the town, not with how finely it is cut
 	for city.Deficit > 0 && attempts < 40 {
 		attempts++
 		if streetsThisYear < streetLimit && city.bestFreeFrontage() < city.Scenario.OpenStreetsBelow {
@@ -47,6 +47,17 @@ func (city *City) expand() {
 			return
 		}
 	}
+}
+
+const defaultSegment = 0.055 // the street piece the yearly limit was calibrated with
+
+// streetLength is the total length of the street network.
+func (city *City) streetLength() float64 {
+	total := 0.0
+	for _, edge := range city.Network.Edges {
+		total += city.Network.Segment(edge).Length()
+	}
+	return total
 }
 
 // growStreets tries to open some streets from nodes chosen by weight; it returns how many opened.
@@ -124,6 +135,9 @@ func (city *City) nodeWeight(node int) float64 {
 		nearBuilt = math.Min(1, float64(around+1)/12)
 	}
 	weight = weight * nearBuilt / (1 + math.Pow(float64(neighbours)/12, 2))
+	if city.Network.Degree(node) == 1 {
+		weight *= city.organic().continuation()
+	}
 	city.nodeWeights[node] = weight
 	return weight
 }
@@ -135,11 +149,11 @@ func (city *City) proposedDirection(node int) (float64, bool) {
 	axis, strength := city.fieldAxis(point)
 	adjusted := closestAngle([]float64{axis, axis + math.Pi/2, axis + math.Pi, axis - math.Pi/2}, base)
 	direction := base
-	if math.Abs(angleDifference(adjusted, base)) < 40*math.Pi/180*(0.5+strength) {
+	if math.Abs(angleDifference(adjusted, base)) < 40*math.Pi/180*(0.5+strength) && city.random.Float64() < city.organic().snapping() {
 		direction = adjusted
 	}
 	_, planned := city.gridZoneAt(point)
-	deviation := 12.0
+	deviation := city.organic().wander()
 	if planned {
 		deviation = 3
 	}
@@ -259,7 +273,8 @@ func (city *City) proposedEnd(node int) (Point, float64, float64) {
 		return end, origin.AngleTo(end), origin.DistanceTo(end)
 	}
 	direction, _ := city.proposedDirection(node)
-	length := math.Max(0.02, 0.055+0.015*city.random.NormFloat64())
+	segment := city.organic().segment()
+	length := math.Max(0.02, segment+0.27*segment*city.random.NormFloat64())
 	return origin.Towards(direction, length), direction, length
 }
 
@@ -325,13 +340,13 @@ func (city *City) streetDestination(node int, piece Segment) (int, bool) {
 		}
 		return city.Network.SplitEdge(first.edge, first.point), true
 	}
-	lengthened := Segment{piece.From, piece.From.Add(piece.To.Subtract(piece.From).Scale(closingFactor))}
+	lengthened := Segment{piece.From, piece.From.Add(piece.To.Subtract(piece.From).Scale(city.organic().closing()))}
 	closings := city.crossingsOf(node, lengthened)
 	skip := map[int]bool{node: true}
 	for neighbour := range city.Network.neighbours[node] {
 		skip[neighbour] = true
 	}
-	if magnet := city.Network.NearestNode(piece.To, magnetRadius, skip); magnet >= 0 {
+	if magnet := city.Network.NearestNode(piece.To, city.organic().magnet(), skip); magnet >= 0 {
 		return magnet, true
 	}
 	if len(closings) > 0 {

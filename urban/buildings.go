@@ -25,13 +25,15 @@ func (city *City) startBuilding(parcel *Parcel) {
 
 // deepestBuilding is how deep the house of a plot can be.
 func (city *City) deepestBuilding(parcel *Parcel) float64 {
-	return math.Min(parcel.Front*city.Scenario.BuildingDepth[1], parcel.Depth)
+	return math.Min(parcel.Front*city.houseDepthFactor(parcel.Centre), parcel.Depth)
 }
 
 // canDeepen tells whether the house can still grow towards the back.
 func (city *City) canDeepen(parcel *Parcel) bool {
 	if city.squareHouses() {
-		return parcel.BuildingDepth < city.deepestBuilding(parcel)-1e-9
+		// only a real step: the deepest house grows a little every year with the town's density, and
+		// tiny steps would keep houses from ever gaining a floor
+		return parcel.BuildingDepth < city.deepestBuilding(parcel)-0.1*parcel.Front
 	}
 	return parcel.Coverage < fullCoverage
 }

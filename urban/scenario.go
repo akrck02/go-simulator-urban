@@ -26,24 +26,27 @@ import (
 //	clear_nodes: [buildings, grounds, paths]   # what the drawn scene had where the city grows
 //	tree_nodes:  [broadleaf forest, laurel forest]
 type Scenario struct {
-	Relief                TerrainFile     `json:"relief"`
-	Features              string          `json:"features"`
-	Nucleus               *[2]float64     `json:"nucleus"`
-	Population            PopulationCurve `json:"population"`
-	Centres               []GrowthCentre  `json:"centres"`
-	Grid                  []GridZone      `json:"grid"`
-	MaximumFloors         []FloorLimit    `json:"max_floors"`
-	FirstWall             FirstWall       `json:"first_wall"`
-	NewWallWhenOutside    float64         `json:"new_wall_when_outside"`
-	SquareMetresPerPerson float64         `json:"square_metres_per_person"`
-	Seed                  uint64          `json:"seed"`
-	HeightScale           float64         `json:"height_scale"`       // how much buildings are exaggerated in 3D (1 = true height)
-	OpenStreetsBelow      float64         `json:"open_streets_below"` // a town opens streets before building on frontages less wanted than this
-	River                 *RiverSettings  `json:"river"`              // rivers shape the town (see river.go)
-	RareFloors            *RareFloors     `json:"rare_floors"`        // a few of the most wanted plots may go higher
-	BuildingDepth         *[2]float64     `json:"building_depth"`     // houses as deep as [from, to] times their front; nil = coverage 0.4 → 0.7
-	ClearNodes            []string        `json:"clear_nodes"`        // scene nodes cleared under the "clear" features when the city starts
-	TreeNodes             []string        `json:"tree_nodes"`         // scene nodes of trees, cleared there too and under every new plot
+	Relief                TerrainFile      `json:"relief"`
+	Features              string           `json:"features"`
+	Nucleus               *[2]float64      `json:"nucleus"`
+	Population            PopulationCurve  `json:"population"`
+	Centres               []GrowthCentre   `json:"centres"`
+	Grid                  []GridZone       `json:"grid"`
+	MaximumFloors         []FloorLimit     `json:"max_floors"`
+	FirstWall             FirstWall        `json:"first_wall"`
+	NewWallWhenOutside    float64          `json:"new_wall_when_outside"`
+	SquareMetresPerPerson float64          `json:"square_metres_per_person"`
+	Seed                  uint64           `json:"seed"`
+	HeightScale           float64          `json:"height_scale"`       // how much buildings are exaggerated in 3D (1 = true height)
+	OpenStreetsBelow      float64          `json:"open_streets_below"` // a town opens streets before building on frontages less wanted than this
+	River                 *RiverSettings   `json:"river"`              // rivers shape the town (see river.go)
+	Organic               *OrganicSettings `json:"organic"`            // curvier organic streets (see organic.go)
+	Density               *DensitySettings `json:"density"`            // density from the core to the outskirts
+	Squares               *SquareSettings  `json:"squares"`            // irregular squares at busy crossings, gates and bridgeheads
+	RareFloors            *RareFloors      `json:"rare_floors"`        // a few of the most wanted plots may go higher
+	BuildingDepth         *[2]float64      `json:"building_depth"`     // houses as deep as [from, to] times their front; nil = coverage 0.4 → 0.7
+	ClearNodes            []string         `json:"clear_nodes"`        // scene nodes cleared under the "clear" features when the city starts
+	TreeNodes             []string         `json:"tree_nodes"`         // scene nodes of trees, cleared there too and under every new plot
 }
 
 // PopulationCurve gives the number of inhabitants each year.
