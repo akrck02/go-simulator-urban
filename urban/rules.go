@@ -7,6 +7,7 @@ import (
 
 	"github.com/akrck02/go-simulator/plugin"
 	"github.com/akrck02/go-simulator/protocol"
+	"github.com/akrck02/go-simulator/world"
 )
 
 // Version of the plugin.
@@ -68,7 +69,7 @@ func cityRule(registry *cities) plugin.Definition {
 			Name:    "city",
 			Summary: "Sets up a city from its scenario (relief, inputs, population curve, centres, grid, floors, walls) and starts each year. Its instance name names the city.",
 			Parameters: []protocol.ParameterDescription{
-				{Name: "relief", Type: "map", Summary: "{path, minimum_x, minimum_z, cell_size}: heights in metres (.npy), rows from the minimum z"},
+				{Name: "relief", Type: "map", Summary: "{path, minimum_x, minimum_z, cell_size}: heights in metres (.npy), rows from the minimum z; without it, the world's elevation field"},
 				{Name: "features", Type: "text", Summary: "GeoJSON with role: window, road, rivers, obstacles, wall_support, clear"},
 				{Name: "population", Type: "map", Summary: "{model: logistic, from_year, from, to_year, to, ceiling}"},
 				{Name: "centres", Type: "list", Summary: "[{at: [x, z], weight, grows_from, grows_for}]"},
@@ -84,6 +85,7 @@ func cityRule(registry *cities) plugin.Definition {
 				{Name: "clear_nodes", Type: "list", Summary: "scene nodes cleared under the \"clear\" features when the city starts"},
 				{Name: "tree_nodes", Type: "list", Summary: "scene nodes of trees, cleared there too and under every new plot"},
 			},
+			Reads:  world.Interest{Fields: []string{world.FieldElevation}},
 			Writes: writesCity,
 		},
 		New: func(parameters plugin.Parameters) (plugin.Rule, error) {
@@ -97,7 +99,7 @@ func cityRule(registry *cities) plugin.Definition {
 }
 
 func (rule *cityRuleInstance) Start(context *plugin.Context) error {
-	city, err := newCity(context.Instance, rule.scenario)
+	city, err := newCity(context.Instance, rule.scenario, context.World)
 	if err != nil {
 		return err
 	}

@@ -9,7 +9,7 @@ import (
 // Scenario is everything the simulator does not invent: where the city grows, how many people
 // live in it each year and what was there before. It comes from the parameters of the city rule:
 //
-//	relief:      {path: relief.npy, minimum_x: -1, minimum_z: -1, cell_size: 0.0125}
+//	relief:      {path: relief.npy, minimum_x: -1, minimum_z: -1, cell_size: 0.0125}  # without it, the world's elevation field
 //	features:    inputs.geojson     # window, roads, rivers, obstacles, wall_support (property "role")
 //	nucleus:     [0, 0]             # the crossroads of the first village
 //	population:  {model: logistic, from_year: 0, from: 300, to_year: 100, to: 6000, ceiling: 8000}
@@ -26,7 +26,7 @@ import (
 //	clear_nodes: [buildings, grounds, paths]   # what the drawn scene had where the city grows
 //	tree_nodes:  [broadleaf forest, laurel forest]
 type Scenario struct {
-	Relief                TerrainFile      `json:"relief"`
+	Relief                TerrainFile      `json:"relief"` // optional: the world's elevation field when missing
 	Features              string           `json:"features"`
 	Nucleus               *[2]float64      `json:"nucleus"`
 	Population            PopulationCurve  `json:"population"`
@@ -168,9 +168,6 @@ func (scenario *Scenario) fillDefaults() {
 }
 
 func (scenario *Scenario) check() error {
-	if scenario.Relief.Path == "" {
-		return fmt.Errorf("city: relief is missing")
-	}
 	if scenario.Population.Model != "logistic" {
 		return fmt.Errorf("city: population model %q is unknown (known: logistic)", scenario.Population.Model)
 	}

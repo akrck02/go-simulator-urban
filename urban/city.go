@@ -9,6 +9,7 @@ import (
 	"slices"
 
 	"github.com/akrck02/go-simulator/plugin"
+	"github.com/akrck02/go-simulator/world"
 	"github.com/twpayne/go-geos"
 )
 
@@ -113,12 +114,13 @@ type City struct {
 	published        map[string]string // entity identifier → signature of what was sent
 }
 
-// newCity loads a scenario's inputs and lays out the roads that already exist.
-func newCity(name string, scenario *Scenario) (*City, error) {
-	terrain, err := LoadTerrain(TerrainFile{Path: plugin.Path(scenario.Relief.Path), MinimumX: scenario.Relief.MinimumX,
-		MinimumZ: scenario.Relief.MinimumZ, CellSize: scenario.Relief.CellSize})
+// newCity loads a scenario's inputs and lays out the roads that already exist. The ground is the
+// world's elevation field (published by the terrain plugin) or, when the scenario names a relief
+// file, that file.
+func newCity(name string, scenario *Scenario, current *world.World) (*City, error) {
+	terrain, err := terrainOf(scenario, current)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("city %q: %w", name, err)
 	}
 	city := &City{Name: name, Scenario: scenario, Terrain: terrain, Network: NewNetwork(), Belts: emptyGeometry(),
 		Window: emptyGeometry(), Obstacles: emptyGeometry(), Rivers: emptyGeometry(), WallSupport: emptyGeometry(), ClearArea: emptyGeometry(), WallOutline: emptyGeometry(),
@@ -133,6 +135,18 @@ func newCity(name string, scenario *Scenario) (*City, error) {
 		return nil, fmt.Errorf("city %q: the features need a \"window\" polygon (where the city may grow)", name)
 	}
 	return city, nil
+}
+
+func terrainOf(scenario *Scenario, current *world.World) (*Terrain, error) {
+	if scenario.Relief.Path != "" {
+		return LoadTerrain(TerrainFile{Path: plugin.Path(scenario.Relief.Path), MinimumX: scenario.Relief.MinimumX,
+			MinimumZ: scenario.Relief.MinimumZ, CellSize: scenario.Relief.CellSize})
+	}
+	elevation := current.Field(world.FieldElevation)
+	if elevation == nil {
+		return nil, fmt.Errorf("no ground: put the terrain plugin before urban in the rules file, or give a relief")
+	}
+	return TerrainFromField(elevation)
 }
 
 // loadFeatures reads the GeoJSON inputs: every feature has a "role".

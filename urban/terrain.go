@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/akrck02/go-simulator/world"
 )
 
 // Terrain is the relief the city grows on: heights in metres on a grid over the ground plane.
@@ -40,6 +42,23 @@ func LoadTerrain(file TerrainFile) (*Terrain, error) {
 		return nil, fmt.Errorf("relief %s: cell_size must be positive", file.Path)
 	}
 	terrain := &Terrain{Columns: columns, Rows: rows, MinimumX: file.MinimumX, MinimumZ: file.MinimumZ, CellSize: file.CellSize, heights: heights}
+	terrain.computeSlopes()
+	return terrain, nil
+}
+
+// TerrainFromField takes the ground from a world field of heights in metres (the elevation the
+// terrain plugin publishes): rows from the smallest z, values at cell centres.
+func TerrainFromField(field *world.Field) (*Terrain, error) {
+	if field.Columns < 2 || field.Rows < 2 {
+		return nil, fmt.Errorf("the elevation field needs at least 2 × 2 cells")
+	}
+	cellSize := (field.Extent.MaximumX - field.Extent.MinimumX) / float64(field.Columns)
+	heights := make([]float64, len(field.Values))
+	for index, value := range field.Values {
+		heights[index] = float64(value)
+	}
+	terrain := &Terrain{Columns: field.Columns, Rows: field.Rows, CellSize: cellSize, heights: heights,
+		MinimumX: field.Extent.MinimumX + cellSize/2, MinimumZ: field.Extent.MinimumZ + cellSize/2}
 	terrain.computeSlopes()
 	return terrain, nil
 }
