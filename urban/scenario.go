@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"regexp"
 )
 
 // Scenario is everything the simulator does not invent: where the city grows, how many people
@@ -25,30 +26,34 @@ import (
 //	building_depth: [1, 1.5]                # houses nearly square: 1 to 1.5 times as deep as their front
 //	clear_nodes: [buildings, grounds, paths]   # what the drawn scene had where the city grows
 //	tree_nodes:  [broadleaf forest, laurel forest]
+//	colours:     {street: "#e9e0c8", housing: "#b86f52", garden: "#c3c29a"}   # by kind, use or "garden"; the rest grey
 type Scenario struct {
-	Relief                TerrainFile      `json:"relief"` // optional: the world's elevation field when missing
-	Features              string           `json:"features"`
-	Nucleus               *[2]float64      `json:"nucleus"`
-	Population            PopulationCurve  `json:"population"`
-	Centres               []GrowthCentre   `json:"centres"`
-	Grid                  []GridZone       `json:"grid"`
-	MaximumFloors         []FloorLimit     `json:"max_floors"`
-	FirstWall             FirstWall        `json:"first_wall"`
-	WallRise              *WallRise        `json:"wall_rise"` // the wall grows in height over the years; nil = 11 m from the start
-	NewWallWhenOutside    float64          `json:"new_wall_when_outside"`
-	SquareMetresPerPerson float64          `json:"square_metres_per_person"`
-	Seed                  uint64           `json:"seed"`
-	HeightScale           float64          `json:"height_scale"`       // how much buildings are exaggerated in 3D (1 = true height)
-	OpenStreetsBelow      float64          `json:"open_streets_below"` // a town opens streets before building on frontages less wanted than this
-	River                 *RiverSettings   `json:"river"`              // rivers shape the town (see river.go)
-	Organic               *OrganicSettings `json:"organic"`            // curvier organic streets (see organic.go)
-	Density               *DensitySettings `json:"density"`            // density from the core to the outskirts
-	Squares               *SquareSettings  `json:"squares"`            // irregular squares at busy crossings, gates and bridgeheads
-	RareFloors            *RareFloors      `json:"rare_floors"`        // a few of the most wanted plots may go higher
-	BuildingDepth         *[2]float64      `json:"building_depth"`     // houses as deep as [from, to] times their front; nil = coverage 0.4 → 0.7
-	ClearNodes            []string         `json:"clear_nodes"`        // scene nodes cleared under the "clear" features when the city starts
-	TreeNodes             []string         `json:"tree_nodes"`         // scene nodes of trees, cleared there too and under every new plot
+	Relief                TerrainFile       `json:"relief"` // optional: the world's elevation field when missing
+	Features              string            `json:"features"`
+	Nucleus               *[2]float64       `json:"nucleus"`
+	Population            PopulationCurve   `json:"population"`
+	Centres               []GrowthCentre    `json:"centres"`
+	Grid                  []GridZone        `json:"grid"`
+	MaximumFloors         []FloorLimit      `json:"max_floors"`
+	FirstWall             FirstWall         `json:"first_wall"`
+	WallRise              *WallRise         `json:"wall_rise"` // the wall grows in height over the years; nil = 11 m from the start
+	NewWallWhenOutside    float64           `json:"new_wall_when_outside"`
+	SquareMetresPerPerson float64           `json:"square_metres_per_person"`
+	Seed                  uint64            `json:"seed"`
+	HeightScale           float64           `json:"height_scale"`       // how much buildings are exaggerated in 3D (1 = true height)
+	OpenStreetsBelow      float64           `json:"open_streets_below"` // a town opens streets before building on frontages less wanted than this
+	River                 *RiverSettings    `json:"river"`              // rivers shape the town (see river.go)
+	Organic               *OrganicSettings  `json:"organic"`            // curvier organic streets (see organic.go)
+	Density               *DensitySettings  `json:"density"`            // density from the core to the outskirts
+	Squares               *SquareSettings   `json:"squares"`            // irregular squares at busy crossings, gates and bridgeheads
+	RareFloors            *RareFloors       `json:"rare_floors"`        // a few of the most wanted plots may go higher
+	BuildingDepth         *[2]float64       `json:"building_depth"`     // houses as deep as [from, to] times their front; nil = coverage 0.4 → 0.7
+	ClearNodes            []string          `json:"clear_nodes"`        // scene nodes cleared under the "clear" features when the city starts
+	TreeNodes             []string          `json:"tree_nodes"`         // scene nodes of trees, cleared there too and under every new plot
+	Colours               map[string]string `json:"colours"`            // sRGB "#rrggbb" by kind, use or "garden"; the rest is grey
 }
+
+var hexColour = regexp.MustCompile(`^#[0-9a-fA-F]{6}$`)
 
 // PopulationCurve gives the number of inhabitants each year.
 type PopulationCurve struct {
@@ -168,6 +173,11 @@ func (scenario *Scenario) fillDefaults() {
 }
 
 func (scenario *Scenario) check() error {
+	for name, hex := range scenario.Colours {
+		if !hexColour.MatchString(hex) {
+			return fmt.Errorf("city: colour of %q is %q; write it as \"#rrggbb\"", name, hex)
+		}
+	}
 	if scenario.Population.Model != "logistic" {
 		return fmt.Errorf("city: population model %q is unknown (known: logistic)", scenario.Population.Model)
 	}

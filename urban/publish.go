@@ -28,11 +28,25 @@ const (
 	squareLift     = 0.0007
 )
 
-// colours of the map sheets (urbanismo.py), as linear RGBA.
-var colours = map[string][4]float32{
-	"garden": linear("#c3c29a"), UseExtensive: linear("#9aa37a"), UseHousing: linear("#b86f52"), UseShop: linear("#c98f6e"),
-	UseWorkshop: linear("#6b5a4c"), "street": linear("#e9e0c8"), "wall": linear("#fbf8f0"), "square": linear("#efe7d1"),
-	"old_wall": linear("#d9cfb5"), "bridge": linear("#efe7d2"), "water": linear("#6fa3bf"),
+// fallbackColour is the grey of what the scenario gives no colour: the look belongs to the scene
+// style or to the scenario's "colours", not to the plugin.
+const fallbackColour = "#a9a9a9"
+
+// colour returns the colour the scenario gives a name (a kind, a use, "garden"), as linear RGBA,
+// or the fallback grey.
+func (city *City) colour(name string) [4]float32 {
+	if hex, given := city.Scenario.Colours[name]; given {
+		return linear(hex)
+	}
+	return linear(fallbackColour)
+}
+
+// colourOfUse returns the colour of a use, or the colour of housing when the scenario gives none.
+func (city *City) colourOfUse(use string) [4]float32 {
+	if _, given := city.Scenario.Colours[use]; given {
+		return city.colour(use)
+	}
+	return city.colour(UseHousing)
 }
 
 // linear turns an sRGB hex colour into linear RGBA, the colour space glTF scenes use.
@@ -139,14 +153,14 @@ func (city *City) entities() map[string]*world.Entity {
 	}
 	city.addWallEntities(add)
 	for index, square := range city.Squares {
-		add(groundEntity(fmt.Sprintf("%s-square-%d", city.Name, index), "square", square, 0, "squares", colours["square"], squareLift, nil))
+		add(groundEntity(fmt.Sprintf("%s-square-%d", city.Name, index), "square", square, 0, "squares", city.colour("square"), squareLift, nil))
 	}
 	for index, axis := range city.RiverAxes {
-		add(lineEntity(fmt.Sprintf("%s-river-%d", city.Name, index), "river", coordinatesOf(axis.line), axis.width, 0, "water", colours["water"],
+		add(lineEntity(fmt.Sprintf("%s-river-%d", city.Name, index), "river", coordinatesOf(axis.line), axis.width, 0, "water", city.colour("water"),
 			map[string]any{"width": axis.width}))
 	}
 	for index, bridge := range city.Bridges {
-		add(lineEntity(fmt.Sprintf("%s-bridge-%d", city.Name, index), "bridge", []Point{bridge.From, bridge.To}, bridgeWidth, 0, "bridges", colours["bridge"], nil))
+		add(lineEntity(fmt.Sprintf("%s-bridge-%d", city.Name, index), "bridge", []Point{bridge.From, bridge.To}, bridgeWidth, 0, "bridges", city.colour("bridge"), nil))
 	}
 	return entities
 }
@@ -158,13 +172,13 @@ func (city *City) streetEntity(edge *Edge) *world.Entity {
 		properties["year"] = edge.Year
 	}
 	return lineEntity(fmt.Sprintf("%s-street-%d", city.Name, edge.Identifier), "street", []Point{segment.From, segment.To},
-		widthOf(edge.Class), 0, "streets", colours["street"], properties)
+		widthOf(edge.Class), 0, "streets", city.colour("street"), properties)
 }
 
 func (city *City) parcelEntity(parcel *Parcel) *world.Entity {
-	colour := colours["garden"]
+	colour := city.colour("garden")
 	if parcel.Use == UseExtensive {
-		colour = colours[UseExtensive]
+		colour = city.colour(UseExtensive)
 	}
 	properties := map[string]any{"use": parcel.Use, "coverage": parcel.Coverage, "floors": parcel.Floors, "year": parcel.Year,
 		"front": parcel.Front, "depth": parcel.Depth, "street": parcel.Edge, "square_metres": parcel.SquareMetres}
@@ -199,10 +213,7 @@ func (city *City) buildingEntity(parcel *Parcel, footprint *geos.Geom, suffix st
 		return nil
 	}
 	height := city.metres(metresPerFloor*float64(parcel.Floors) + roofMetres)
-	colour, known := colours[parcel.Use]
-	if !known {
-		colour = colours[UseHousing]
-	}
+	colour := city.colourOfUse(parcel.Use)
 	return groundEntity(fmt.Sprintf("%s-building-%d%s", city.Name, parcel.Identifier, suffix), "building", footprint, height, "buildings", colour, 0,
 		map[string]any{"use": parcel.Use, "floors": parcel.Floors, "parcel": parcel.Identifier})
 }
@@ -216,9 +227,9 @@ func (city *City) addWallEntities(add func(*world.Entity)) {
 			if current {
 				height := city.wallHeightOf(wall.Year)
 				properties["height_m"] = height
-				add(lineEntity(identifier, "wall", coordinatesOf(line), wallWidth, city.metres(height), "walls", colours["wall"], properties))
+				add(lineEntity(identifier, "wall", coordinatesOf(line), wallWidth, city.metres(height), "walls", city.colour("wall"), properties))
 			} else {
-				add(lineEntity(identifier, "old_wall", coordinatesOf(line), oldWallWidth, 0, "old_walls", colours["old_wall"], properties))
+				add(lineEntity(identifier, "old_wall", coordinatesOf(line), oldWallWidth, 0, "old_walls", city.colour("old_wall"), properties))
 			}
 		}
 	}

@@ -23,11 +23,15 @@ the randomness, and this one runs in under a minute instead of four.
 
 The city rule's scenario:
 
+The city grows on the world's `elevation` field, which the
+[terrain plugin](../go-simulator-terrain) publishes: put it before urban in the rules file. A
+`relief` file in the scenario takes its place where there is no terrain plugin (the tests do so).
+
 ```yaml
 - rule: city
   name: my_town
   with:
-    relief: {path: relief.npy, minimum_x: -1, minimum_z: -1, cell_size: 0.0125}  # heights in metres, rows from the minimum z
+    relief: {path: relief.npy, minimum_x: -1, minimum_z: -1, cell_size: 0.0125}  # optional: heights in metres, rows from the minimum z
     features: inputs.geojson     # features with "role": window, road, rivers, obstacles, wall_support, clear
     nucleus: [0, 0]              # the first village's square
     population: {model: logistic, from_year: 0, from: 300, to_year: 100, to: 6000, ceiling: 8000}
@@ -44,7 +48,13 @@ The city rule's scenario:
     height_scale: 3              # exaggeration of building heights in 3D
     clear_nodes: [buildings, grounds, paths]   # scene nodes cleared under the "clear" features at the start
     tree_nodes: [broadleaf forest, laurel forest] # trees, cleared there too and under every new plot
+    colours: {street: "#e9e0c8", housing: "#b86f52", garden: "#c3c29a"}  # by kind, use or "garden"; the rest grey
 ```
+
+The scenario can live in its own file, with comments, and come in with go-simulator's
+`include` (`with: {include: scenario.yaml}`). Colours are only for viewing without a scene style:
+the plugin itself draws everything grey, and a scene style (`scene_style`) draws the city with
+roofs, doors and materials whatever the colours.
 
 Rivers that cross a town come as `river` features (a line along the axis with a `width` property,
 in km); their water is an obstacle. With the scenario's `river` settings they shape the town:
