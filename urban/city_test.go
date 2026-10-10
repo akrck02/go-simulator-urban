@@ -167,6 +167,18 @@ func TestSquareHousesRareFloorsAndAGivenWall(t *testing.T) {
 	}
 }
 
+func TestWallHeightsFollowTheCalendar(t *testing.T) {
+	heights := WallHeights{{60, 4}, {70, 4}, {100, 25}}
+	for _, check := range []struct{ year, want float64 }{{40, 4}, {60, 4}, {70, 4}, {85, 14.5}, {100, 25}, {120, 25}} {
+		if got := heights.At(check.year); math.Abs(got-check.want) > 1e-9 {
+			t.Errorf("in year %v: %v m, want %v", check.year, got, check.want)
+		}
+	}
+	if (WallHeights{{70, 4}, {60, 25}}).check() == nil {
+		t.Error("years that go down must be refused")
+	}
+}
+
 func TestWallRisesInPhases(t *testing.T) {
 	rise := WallRise{From: 6, Height: 30, Years: 30}
 	for _, check := range []struct{ years, want float64 }{{0, 6}, {15, 18}, {30, 30}, {50, 30}, {-2, 6}} {

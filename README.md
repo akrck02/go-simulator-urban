@@ -42,6 +42,7 @@ The city grows on the world's `elevation` field, which the
     rare_floors: {floors: 3, share: 0.05}   # only the most wanted plots go above the usual maximum
     building_depth: [1, 1.5]     # nearly square houses on long plots; without it, coverage grows 0.4 → 0.7
     first_wall: {year: 60, population: 3000}
+    wall_heights: [[60, 4], [70, 4], [100, 25]]   # optional: a 4 m fence until year 70, then built up to 25 m by year 100
     new_wall_when_outside: 0.3
     square_metres_per_person: 30
     seed: 7

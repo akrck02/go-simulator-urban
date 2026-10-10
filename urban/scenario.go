@@ -36,7 +36,8 @@ type Scenario struct {
 	Grid                  []GridZone        `json:"grid"`
 	MaximumFloors         []FloorLimit      `json:"max_floors"`
 	FirstWall             FirstWall         `json:"first_wall"`
-	WallRise              *WallRise         `json:"wall_rise"` // the wall grows in height over the years; nil = 11 m from the start
+	WallRise              *WallRise         `json:"wall_rise"`    // the wall grows in height over the years; nil = 11 m from the start
+	WallHeights           WallHeights       `json:"wall_heights"` // the wall's height by calendar year; wins over wall_rise
 	NewWallWhenOutside    float64           `json:"new_wall_when_outside"`
 	SquareMetresPerPerson float64           `json:"square_metres_per_person"`
 	Seed                  uint64            `json:"seed"`
@@ -134,6 +135,40 @@ func (rise WallRise) HeightAfter(years float64) float64 {
 	return rise.From + (rise.Height-rise.From)*math.Max(0, years)/rise.Years
 }
 
+// WallHeights gives the height (metres) of the standing wall by calendar year, as [year, metres]
+// pairs in order: between two years the height changes evenly, before the first year it is the
+// first height and after the last year the last one. It lets a wall go up in stages that do not
+// depend on when it was raised, such as a low fence that is later built up into a great wall:
+//
+//	wall_heights: [[60, 4], [70, 4], [100, 25]]   # 4 m until year 70, then up to 25 m by year 100
+type WallHeights [][2]float64
+
+// At is the height in a year.
+func (heights WallHeights) At(year float64) float64 {
+	if year <= heights[0][0] {
+		return heights[0][1]
+	}
+	for index := 1; index < len(heights); index++ {
+		start, end := heights[index-1], heights[index]
+		if year <= end[0] {
+			return start[1] + (end[1]-start[1])*(year-start[0])/(end[0]-start[0])
+		}
+	}
+	return heights[len(heights)-1][1]
+}
+
+func (heights WallHeights) check() error {
+	for index, pair := range heights {
+		if pair[1] <= 0 {
+			return fmt.Errorf("city: wall_heights: the height of year %g must be positive", pair[0])
+		}
+		if index > 0 && pair[0] <= heights[index-1][0] {
+			return fmt.Errorf("city: wall_heights: the years must go up (%g after %g)", pair[0], heights[index-1][0])
+		}
+	}
+	return nil
+}
+
 // scenarioFrom reads the scenario from the city rule's parameters and fills in the defaults.
 func scenarioFrom(parameters map[string]any) (*Scenario, error) {
 	encoded, err := json.Marshal(parameters)
@@ -173,6 +208,9 @@ func (scenario *Scenario) fillDefaults() {
 }
 
 func (scenario *Scenario) check() error {
+	if err := scenario.WallHeights.check(); err != nil {
+		return err
+	}
 	for name, hex := range scenario.Colours {
 		if !hexColour.MatchString(hex) {
 			return fmt.Errorf("city: colour of %q is %q; write it as \"#rrggbb\"", name, hex)

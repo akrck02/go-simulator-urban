@@ -237,6 +237,9 @@ func (city *City) addWallEntities(add func(*world.Entity)) {
 
 // wallHeightOf is how tall (metres) a wall raised in a year stands now.
 func (city *City) wallHeightOf(year float64) float64 {
+	if len(city.Scenario.WallHeights) > 0 {
+		return city.Scenario.WallHeights.At(city.Year)
+	}
 	if city.Scenario.WallRise == nil {
 		return wallHeight
 	}
