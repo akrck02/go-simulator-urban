@@ -1,7 +1,8 @@
 # go-simulator-urban
 
-![A town growing for 100 years on a made-up island](docs/img/town_growth.jpg)
+> **Note:** this project was written with an AI assistant and is pending thorough review. See the [AI disclosure](#ai-disclosure).
 
+![A town growing for 100 years on a made-up island](docs/img/town_growth.jpg)
 
 A [go-simulator](https://github.com/akrck02/go-simulator) plugin that grows pre-industrial cities year by year on real
 relief: streets, burgage plots, densification, walls, squares and space syntax. Every rule comes
@@ -21,3 +22,13 @@ only rule of its own is the walls', because no published model simulates them.
 Documentation in [docs/](docs/README.md): [the model](docs/model.md), [the scenario](docs/scenario.md),
 [outputs](docs/outputs.md), [testing](docs/testing.md) and the [rules reference](docs/rules.md).
 Needs GEOS (`pkg-config geos`).
+
+## AI disclosure
+
+I write most of my code by hand, so I want to be clear about this project: **it was written by an
+AI assistant (Claude, by Anthropic) under my direction.** I decided what to build and how it should
+behave; the code, the tests and the documentation were written by the AI. Every commit made this
+way carries a `Co-Authored-By: Claude` line (14 of 14 commits here).
+
+**Status: pending thorough review.** The code compiles and its tests pass, but I have not yet
+reviewed it line by line. Treat it as a working draft, not as code I vouch for.
