@@ -28,7 +28,7 @@ Needs GEOS (`pkg-config geos`).
 I write most of my code by hand, so I want to be clear about this project: **it was written by an
 AI assistant (Claude, by Anthropic) under my direction.** I decided what to build and how it should
 behave; the code, the tests and the documentation were written by the AI. Every commit made this
-way carries a `Co-Authored-By: Claude` line (14 of 14 commits here).
+way carries a `Co-Authored-By: Claude` line (all of them).
 
 **Status: pending thorough review.** The code compiles and its tests pass, but I have not yet
 reviewed it line by line. Treat it as a working draft, not as code I vouch for.
