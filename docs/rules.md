@@ -1,10 +1,10 @@
-# Rules of the urban plugin
+# 📋 Rules of the urban plugin
 
 Version 0.1.0, protocol 1. Pre-industrial urban growth, year by year, on real relief (Weber et al. 2009; Conzen 1960; Hillier and Iida 2005).
 
 This reference is generated from what the plugin itself tells the host (the `describe` message), so it always
 matches the code. Parameters go under `with:` in a rules file; see go-simulator's
-[rules file reference](https://github.com/akrck02/go-simulator/blob/feature/simuladores-genericos/docs/rules-files.md).
+[rules file reference](https://github.com/akrck02/go-simulator/blob/main/docs/rules-files.md).
 
 | Rule | What it does |
 |---|---|
@@ -18,7 +18,7 @@ matches the code. Parameters go under `with:` in a rules file; see go-simulator'
 | [`indicators`](#indicators) | Emits an "indicators" event with the city's form measures in the listed years (every step when none). |
 | [`squares`](#squares) | Opens irregular squares at busy crossings, inside gates and at bridgeheads (scenario "squares"). |
 
-## city
+## `city`
 
 Sets up a city from its scenario (relief, inputs, population curve, centres, grid, floors, walls) and starts each year. Its instance name names the city.
 
@@ -52,7 +52,7 @@ Sets up a city from its scenario (relief, inputs, population curve, centres, gri
 | `clear_nodes` | list |  | scene nodes cleared under the "clear" features when the city starts |
 | `tree_nodes` | list |  | scene nodes of trees, cleared there too and under every new plot |
 
-## densify
+## `densify`
 
 Fills existing plots before the city spreads (burgage cycle).
 
@@ -63,7 +63,7 @@ Fills existing plots before the city spreads (burgage cycle).
 |---|---|---|---|
 | `city` | text |  | instance name of the city rule |
 
-## expand
+## `expand`
 
 Lays plots along free frontages and opens new streets when none are left.
 
@@ -74,7 +74,7 @@ Lays plots along free frontages and opens new streets when none are left.
 |---|---|---|---|
 | `city` | text |  | instance name of the city rule |
 
-## walls
+## `walls`
 
 Raises the first wall and new ones when the suburbs grow too big.
 
@@ -85,7 +85,7 @@ Raises the first wall and new ones when the suburbs grow too big.
 |---|---|---|---|
 | `city` | text |  | instance name of the city rule |
 
-## prune_empty_streets
+## `prune_empty_streets`
 
 Removes dead ends nobody built on after some years.
 
@@ -97,7 +97,7 @@ Removes dead ends nobody built on after some years.
 | `city` | text |  | instance name of the city rule |
 | `grace_years` | number | `8` |  |
 
-## split_large_blocks
+## `split_large_blocks`
 
 Cuts an alley across blocks wider than a size (Siksna 1997).
 
@@ -109,7 +109,7 @@ Cuts an alley across blocks wider than a size (Siksna 1997).
 | `city` | text |  | instance name of the city rule |
 | `maximum_side` | number | `0.12` | world units |
 
-## space_syntax
+## `space_syntax`
 
 Angular segment analysis: main streets, the market square and shops.
 
@@ -122,7 +122,7 @@ Angular segment analysis: main streets, the market square and shops.
 | `samples` | number | `250` |  |
 | `local_radius` | number | `0.8` |  |
 
-## indicators
+## `indicators`
 
 Emits an "indicators" event with the city's form measures in the listed years (every step when none).
 
@@ -134,7 +134,7 @@ Emits an "indicators" event with the city's form measures in the listed years (e
 | `city` | text |  | instance name of the city rule |
 | `years` | list |  |  |
 
-## squares
+## `squares`
 
 Opens irregular squares at busy crossings, inside gates and at bridgeheads (scenario "squares").
 
