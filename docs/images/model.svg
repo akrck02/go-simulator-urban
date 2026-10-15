@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 400" width="880" height="400" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <style>
+    .bg { fill: #ffffff; }
+    .box { fill: #f6f8fa; stroke: #d0d7de; }
+    .accent { fill: #ddf4ff; stroke: #54aeff; }
+    .title { fill: #1f2328; font-size: 15px; font-weight: 600; }
+    .text { fill: #59636e; font-size: 12.5px; }
+    .code { fill: #0969da; font-size: 12.5px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .label { fill: #59636e; font-size: 11.5px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .arrow { stroke: #8c959f; stroke-width: 1.6; fill: none; }
+    .head { fill: #8c959f; }
+    .plot { fill: #ece6d3; stroke: #c9bfa0; stroke-width: 1; }
+    .house { fill: #b86f52; }
+    .house2 { fill: #8a4a33; }
+    .street { stroke: #8c959f; stroke-width: 10; stroke-linecap: round; fill: none; }
+    .dim { stroke: #59636e; stroke-width: 1; fill: none; }
+    .dashed { fill: #ffffff; stroke: #d0d7de; stroke-dasharray: 4 3; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0d1117; }
+      .box { fill: #161b22; stroke: #30363d; }
+      .accent { fill: #0c2d4b; stroke: #1f6feb; }
+      .title { fill: #e6edf3; }
+      .text { fill: #9198a1; }
+      .code { fill: #4493f8; }
+      .label { fill: #9198a1; }
+      .arrow { stroke: #6e7681; }
+      .head { fill: #6e7681; }
+      .plot { fill: #2b2a24; stroke: #4a4636; }
+      .house { fill: #d1856a; }
+      .house2 { fill: #f2b8a0; }
+      .street { stroke: #484f58; }
+      .dim { stroke: #9198a1; }
+      .dashed { fill: #0d1117; stroke: #30363d; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="head" d="M0,0 L10,5 L0,10 z"/>
+    </marker>
+  </defs>
+  <defs>
+    <marker id="tick" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path class="head" d="M5,0 V10" stroke-width="2"/></marker>
+  </defs>
+  <rect class="bg" width="880" height="400" rx="12"/>
+  <rect class="box" x="24" y="24" width="300" height="352" rx="10" stroke-width="1.2"/>
+  <text class="title" x="44" y="52">A plot on a frontage</text>
+  <path class="street" d="M54,330 H300"/>
+  <text class="label" x="177" y="358" text-anchor="middle">the street (a frontage on each side)</text>
+  <rect class="plot" x="74" y="116" width="52" height="202"/>
+  <rect class="house" x="77" y="228" width="46" height="90"/>
+  <rect class="plot" x="134" y="116" width="52" height="202"/>
+  <rect class="house" x="137" y="172" width="46" height="146"/>
+  <rect class="plot" x="194" y="116" width="52" height="202"/>
+  <rect class="house" x="197" y="198" width="46" height="120"/>
+  <rect class="plot" x="254" y="116" width="52" height="202"/>
+  <rect class="house" x="257" y="256" width="46" height="62"/>
+  <path class="dim" d="M134,104 H186 M134,99 V109 M186,99 V109"/>
+  <text class="label" x="196" y="108">front</text>
+  <path class="dim" d="M64,116 V318 M59,116 H69 M59,318 H69"/>
+  <text class="label" x="58" y="214" text-anchor="end" transform="rotate(-90 58 214)">depth</text>
+  <text class="text" x="44" y="74">narrow front, deep plot: a burgage</text>
+  <rect class="box" x="344" y="24" width="512" height="352" rx="10" stroke-width="1.2"/>
+  <text class="title" x="364" y="52">One plot over the years (densify)</text>
+  <rect class="plot" x="372" y="100" width="66" height="208"/>
+  <path class="street" style="stroke-width:6" d="M366,318 H444"/>
+  <rect class="house" x="376" y="248" width="58" height="60"/>
+  <text class="text" x="405" y="340" text-anchor="middle">a house at</text>
+  <text class="text" x="405" y="357" text-anchor="middle">the front</text>
+  <path class="arrow" d="M444,204 H488" marker-end="url(#arrow)"/>
+  <rect class="plot" x="494" y="100" width="66" height="208"/>
+  <path class="street" style="stroke-width:6" d="M488,318 H566"/>
+  <rect class="house" x="498" y="162" width="58" height="146"/>
+  <text class="text" x="527" y="340" text-anchor="middle">it takes the</text>
+  <text class="text" x="527" y="357" text-anchor="middle">back of the plot</text>
+  <path class="arrow" d="M566,204 H610" marker-end="url(#arrow)"/>
+  <rect class="plot" x="616" y="100" width="66" height="208"/>
+  <path class="street" style="stroke-width:6" d="M610,318 H688"/>
+  <rect class="house" x="620" y="162" width="58" height="146"/>
+  <path class="dim" d="M620,172 H678" style="stroke:#ffffff;opacity:0.7"/>
+  <path class="dim" d="M620,182 H678" style="stroke:#ffffff;opacity:0.7"/>
+  <text class="label" x="649" y="239.0" text-anchor="middle" style="fill:#ffffff">3 floors</text>
+  <text class="text" x="649" y="340" text-anchor="middle">then it gains</text>
+  <text class="text" x="649" y="357" text-anchor="middle">floors</text>
+  <path class="arrow" d="M688,204 H732" marker-end="url(#arrow)"/>
+  <rect class="plot" x="738" y="100" width="66" height="208"/>
+  <path class="street" style="stroke-width:6" d="M732,318 H810"/>
+  <rect class="house" x="742" y="162" width="58" height="146"/>
+  <path class="dim" d="M742,172 H800" style="stroke:#ffffff;opacity:0.7"/>
+  <path class="dim" d="M742,182 H800" style="stroke:#ffffff;opacity:0.7"/>
+  <text class="label" x="771" y="239.0" text-anchor="middle" style="fill:#ffffff">3 floors</text>
+  <rect class="house2" x="742" y="104" width="58" height="32"/>
+  <text class="label" x="771" y="150" text-anchor="middle">yard</text>
+  <text class="text" x="771" y="340" text-anchor="middle">in a dense core,</text>
+  <text class="text" x="771" y="357" text-anchor="middle">one at the back</text>
+  <text class="text" x="364" y="74">coverage 0.4 → 0.7, then a floor up to the year's maximum</text>
+</svg>

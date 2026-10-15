@@ -1,10 +1,14 @@
-# Outputs
+# 📤 Outputs
 
 ## Entities
 
 The city appears as entities with ground shapes, one batch per kind, so thousands of houses stay
 cheap to draw. Heights are in world units, exaggerated by `height_scale`. Properties travel with
 them, so snapshots can be measured or drawn by other tools.
+
+<p align="center">
+  <img alt="The river town at year 100 with its streets coloured by class: roads, quays, a ring road, alleys, streets the town opened and two main streets; bridges and squares are marked" src="images/streets.svg" width="880">
+</p>
 
 | Kind | Shape | Properties |
 |---|---|---|
@@ -24,6 +28,10 @@ walls stood) and `demolished` (taken by a new street, square or wall).
 
 In the years the `indicators` rule lists, an `indicators` event with the measures to compare with
 historic town centres:
+
+<p align="center">
+  <img alt="A chart of three indicators of the river town over 100 years: inhabitants from 600 to 36,000, settled hectares from 9 to 221, and the hectares towns of that size covered, close to the settled ones; the first wall at year 33 and a new one at year 49" src="images/growth-chart.svg" width="880">
+</p>
 
 | Key | Measure |
 |---|---|
