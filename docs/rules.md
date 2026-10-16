@@ -23,7 +23,7 @@ matches the code. Parameters go under `with:` in a rules file; see go-simulator'
 Sets up a city from its scenario (relief, inputs, population curve, centres, grid, floors, walls) and starts each year. Its instance name names the city.
 
 - **Reads:** entities of kind `river`; fields `elevation`
-- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`
+- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`, `river`
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
@@ -57,7 +57,7 @@ Sets up a city from its scenario (relief, inputs, population curve, centres, gri
 Fills existing plots before the city spreads (burgage cycle).
 
 - **Reads:** nothing from other plugins
-- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`
+- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`, `river`
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
@@ -68,7 +68,7 @@ Fills existing plots before the city spreads (burgage cycle).
 Lays plots along free frontages and opens new streets when none are left.
 
 - **Reads:** nothing from other plugins
-- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`
+- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`, `river`
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
@@ -79,7 +79,7 @@ Lays plots along free frontages and opens new streets when none are left.
 Raises the first wall and new ones when the suburbs grow too big.
 
 - **Reads:** nothing from other plugins
-- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`
+- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`, `river`
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
@@ -90,7 +90,7 @@ Raises the first wall and new ones when the suburbs grow too big.
 Removes dead ends nobody built on after some years.
 
 - **Reads:** nothing from other plugins
-- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`
+- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`, `river`
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
@@ -102,7 +102,7 @@ Removes dead ends nobody built on after some years.
 Cuts an alley across blocks wider than a size (Siksna 1997).
 
 - **Reads:** nothing from other plugins
-- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`
+- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`, `river`
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
@@ -114,7 +114,7 @@ Cuts an alley across blocks wider than a size (Siksna 1997).
 Angular segment analysis: main streets, the market square and shops.
 
 - **Reads:** nothing from other plugins
-- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`
+- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`, `river`
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
@@ -139,7 +139,7 @@ Emits an "indicators" event with the city's form measures in the listed years (e
 Opens irregular squares at busy crossings, inside gates and at bridgeheads (scenario "squares").
 
 - **Reads:** nothing from other plugins
-- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`
+- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`, `river`
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|

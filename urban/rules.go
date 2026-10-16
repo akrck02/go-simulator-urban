@@ -50,7 +50,30 @@ func Plugin() *plugin.Plugin {
 	}
 }
 
-var writesCity = []string{"street", "parcel", "building", "wall", "old_wall", "gate", "square", "bridge"}
+var writesCity = []string{"street", "parcel", "building", "wall", "old_wall", "gate", "square", "bridge", "river"}
+
+// cityOutputs is what every rule of a city publishes: the plugin sends the whole city after each
+// step, whichever rule changed it (see publish.go). Lengths of plots are in km, shapes in world units.
+var cityOutputs = []protocol.OutputDescription{
+	plugin.Kind("street", "a line with a width",
+		plugin.Property("class", "", "road, main, ring, street, alley or quay"), plugin.Property("from_node", "1", ""),
+		plugin.Property("to_node", "1", ""), plugin.Property("year", "year", "when it was opened")),
+	plugin.Kind("parcel", "a plot: a flat outline",
+		plugin.Property("use", "", "housing, shop, workshop, extensive or demolished"), plugin.Property("coverage", "1", "share the building covers"),
+		plugin.Property("floors", "1", ""), plugin.Property("year", "year", "when it was laid out"),
+		plugin.Property("front", "km", ""), plugin.Property("depth", "km", ""), plugin.Property("street", "1", "the street it faces"),
+		plugin.Property("square_metres", "m²", ""), plugin.Property("building_depth", "km", "")),
+	plugin.Kind("building", "a volume of floors × 3.2 m + 2 m",
+		plugin.Property("use", "", ""), plugin.Property("floors", "1", ""), plugin.Property("parcel", "1", "the plot it stands on")),
+	plugin.Kind("wall", "the standing wall: a line with a height",
+		plugin.Property("year", "year", "when it went up"), plugin.Property("current", "", "true"), plugin.Property("height_m", "m", "")),
+	plugin.Kind("old_wall", "where an older wall stood: a flat line", plugin.Property("year", "year", ""), plugin.Property("current", "", "false")),
+	plugin.Kind("gate", "a gate of the standing wall: a point", plugin.Property("year", "year", "when its wall went up"),
+		plugin.Property("wall", "1", "index of its wall")),
+	plugin.Kind("square", "an open public space: a flat outline"),
+	plugin.Kind("bridge", "a line over the water"),
+	plugin.Kind(world.KindRiver, "a river the town grows by: a line with a width", plugin.Property("width", "world", "")),
+}
 
 func cityParameter() protocol.ParameterDescription {
 	return protocol.ParameterDescription{Name: "city", Type: "text", Summary: "instance name of the city rule"}
@@ -95,7 +118,8 @@ func cityRule(registry *cities) plugin.Definition {
 				{Name: "tree_nodes", Type: "list", Summary: "scene nodes of trees, cleared there too and under every new plot"},
 			},
 			Reads:  world.Interest{Fields: []string{world.FieldElevation}, Kinds: []string{world.KindRiver}},
-			Writes: writesCity,
+			Writes: writesCity, Publishes: cityOutputs,
+			Expects: []protocol.InputDescription{plugin.ReadsField(world.FieldElevation, "m"), plugin.ReadsKind(world.KindRiver)},
 		},
 		New: func(parameters plugin.Parameters) (plugin.Rule, error) {
 			scenario, err := scenarioFrom(parameters)
@@ -151,7 +175,7 @@ func (rule *cityAction) Step(*plugin.Context) error {
 
 func yearlyRule(registry *cities, name, summary string, act func(*City)) plugin.Definition {
 	return plugin.Definition{
-		Description: protocol.RuleDescription{Name: name, Summary: summary, Parameters: []protocol.ParameterDescription{cityParameter()}, Writes: writesCity},
+		Description: protocol.RuleDescription{Name: name, Summary: summary, Parameters: []protocol.ParameterDescription{cityParameter()}, Writes: writesCity, Publishes: cityOutputs},
 		New: func(parameters plugin.Parameters) (plugin.Rule, error) {
 			return &cityAction{registry: registry, cityName: parameters.Text("city", ""), act: act}, nil
 		},
@@ -161,7 +185,7 @@ func yearlyRule(registry *cities, name, summary string, act func(*City)) plugin.
 func pruneRule(registry *cities) plugin.Definition {
 	return plugin.Definition{
 		Description: protocol.RuleDescription{Name: "prune_empty_streets", Summary: "Removes dead ends nobody built on after some years.",
-			Parameters: []protocol.ParameterDescription{cityParameter(), {Name: "grace_years", Type: "number", Default: 8}}, Writes: writesCity},
+			Parameters: []protocol.ParameterDescription{cityParameter(), {Name: "grace_years", Type: "number", Default: 8}}, Writes: writesCity, Publishes: cityOutputs},
 		New: func(parameters plugin.Parameters) (plugin.Rule, error) {
 			grace := parameters.Number("grace_years", 8)
 			return &cityAction{registry: registry, cityName: parameters.Text("city", ""), act: func(city *City) { city.pruneEmptyStreets(grace) }}, nil
@@ -172,7 +196,7 @@ func pruneRule(registry *cities) plugin.Definition {
 func splitRule(registry *cities) plugin.Definition {
 	return plugin.Definition{
 		Description: protocol.RuleDescription{Name: "split_large_blocks", Summary: "Cuts an alley across blocks wider than a size (Siksna 1997).",
-			Parameters: []protocol.ParameterDescription{cityParameter(), {Name: "maximum_side", Type: "number", Default: 0.12, Summary: "world units"}}, Writes: writesCity},
+			Parameters: []protocol.ParameterDescription{cityParameter(), {Name: "maximum_side", Type: "number", Default: 0.12, Summary: "world units"}}, Writes: writesCity, Publishes: cityOutputs},
 		New: func(parameters plugin.Parameters) (plugin.Rule, error) {
 			side := parameters.Number("maximum_side", 0.12)
 			return &cityAction{registry: registry, cityName: parameters.Text("city", ""), act: func(city *City) { city.splitLargeBlocks(side) }}, nil
@@ -184,7 +208,7 @@ func syntaxRule(registry *cities) plugin.Definition {
 	return plugin.Definition{
 		Description: protocol.RuleDescription{Name: "space_syntax", Summary: "Angular segment analysis: main streets, the market square and shops.",
 			Parameters: []protocol.ParameterDescription{cityParameter(), {Name: "samples", Type: "number", Default: 250}, {Name: "local_radius", Type: "number", Default: 0.8}},
-			Writes:     writesCity},
+			Writes:     writesCity, Publishes: cityOutputs},
 		New: func(parameters plugin.Parameters) (plugin.Rule, error) {
 			samples, radius := int(parameters.Number("samples", 250)), parameters.Number("local_radius", 0.8)
 			return &cityAction{registry: registry, cityName: parameters.Text("city", ""), act: func(city *City) { city.applySyntax(samples, radius) }}, nil
@@ -203,7 +227,8 @@ type indicatorsRuleInstance struct {
 func indicatorsRule(registry *cities) plugin.Definition {
 	return plugin.Definition{
 		Description: protocol.RuleDescription{Name: "indicators", Summary: "Emits an \"indicators\" event with the city's form measures in the listed years (every step when none).",
-			Parameters: []protocol.ParameterDescription{cityParameter(), {Name: "years", Type: "list"}}},
+			Parameters: []protocol.ParameterDescription{cityParameter(), {Name: "years", Type: "list"}},
+			Publishes:  []protocol.OutputDescription{plugin.Event("indicators", "the city's form measures (see docs/outputs.md)")}},
 		New: func(parameters plugin.Parameters) (plugin.Rule, error) {
 			rule := &indicatorsRuleInstance{registry: registry, cityName: parameters.Text("city", "")}
 			list, _ := parameters["years"].([]any)
