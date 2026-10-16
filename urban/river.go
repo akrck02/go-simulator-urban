@@ -3,6 +3,7 @@ package urban
 import (
 	"math"
 
+	"github.com/akrck02/go-simulator/world"
 	"github.com/twpayne/go-geos"
 )
 
@@ -30,6 +31,8 @@ type RiverSettings struct {
 	BridgeChance     float64 `json:"bridge_chance"`      // chance a street may bridge the river; default 0.6
 	BridgeSpacing    float64 `json:"bridge_spacing"`     // km between bridges along the river; default 0.15
 	WorkshopsByWater float64 `json:"workshops_by_water"` // share of new plots by the water that are workshops; default 0.3
+	FromWorld        bool    `json:"from_world"`         // also take the rivers the world has (the terrain's erosion rule publishes them)
+	Narrowest        float64 `json:"narrowest"`          // km: narrower rivers of the world are left out; default 0 (all)
 }
 
 // riverAxis is the axis of a river with its width.
@@ -88,6 +91,37 @@ func (city *City) addRiver(line *geos.Geom, width float64) {
 	for _, part := range linesOf(line) {
 		city.RiverAxes = append(city.RiverAxes, &riverAxis{line: part, width: width, quays: map[int]bool{}})
 		city.Rivers = unionOf(city.Rivers, part.Buffer(width/2, 8))
+	}
+}
+
+// addWorldRivers takes the rivers other plugins put in the world, such as the ones the terrain's
+// erosion rule finds where the water gathers, so the town and the ground agree on where the water
+// runs. Only the parts near the window count, and rivers narrower than the scenario's narrowest
+// are left out: streams a step wide do not shape a town.
+func (city *City) addWorldRivers(current *world.World) {
+	settings := city.Scenario.River
+	if settings == nil || !settings.FromWorld {
+		return
+	}
+	near := city.Window.Buffer(settings.reach(), 8)
+	for _, entity := range current.EntitiesOfKind(world.KindRiver) {
+		if entity.Shape == nil || len(entity.Shape.Line) < 2 {
+			continue
+		}
+		width := float64(entity.Shape.Width)
+		if given, isNumber := entity.Properties["width"].(float64); isNumber {
+			width = given
+		}
+		if width <= 0 || width < settings.Narrowest {
+			continue
+		}
+		points := make([]Point, 0, len(entity.Shape.Line))
+		for _, point := range entity.Shape.Line {
+			points = append(points, Point{float64(point[0]), float64(point[1])})
+		}
+		if part := lineGeometry(points).Intersection(near); !part.IsEmpty() {
+			city.addRiver(part, width)
+		}
 	}
 }
 

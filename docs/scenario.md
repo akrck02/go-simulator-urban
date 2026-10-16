@@ -88,7 +88,9 @@ from the crossing), `at_gates` (true: a square just inside every gate of the sta
 
 How rivers shape the town: `reach` (0.25 km), `alignment` (1, weight of the banks in street directions),
 `frontage_bonus` (1), `quays` (true), `longest_bridge` (1.6 × the river's width), `bridge_chance`
-(0.6), `bridge_spacing` (0.15 km), `workshops_by_water` (0.3).
+(0.6), `bridge_spacing` (0.15 km), `workshops_by_water` (0.3), `from_world` (false: also take the
+world's `river` entities, as the terrain's `erosion` rule publishes them), `narrowest` (0 km: world
+rivers narrower than this are left out).
 
 ## Input features
 
