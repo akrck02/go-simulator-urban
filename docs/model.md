@@ -68,7 +68,9 @@ changed since the last time travel to the host.
 ## Where the city grows
 
 - **Relief**: the world's `elevation` field (put the terrain plugin first), or a relief file.
-  Slopes steer streets along the contours and keep plots off steep ground.
+  Slopes steer streets along the contours and keep plots off steep ground. When the ground comes
+  from the world and changes (the terrain's `erosion` rule moves it), the city takes it again at
+  the start of the next year.
 - **Growth centres** pull the city; a centre can start pulling in a year and grow in weight over
   some years, so a city gains districts as it grows. The growth radius widens with the population
   (the settled area goes as N^0.714, its radius as N^0.357).
@@ -83,6 +85,12 @@ obstacle. With the scenario's `river` settings they shape the town: streets alig
 quays line both banks once the town reaches them, plots by the water are wanted and some become
 workshops (mills, tanners), and bridges are spaced and square to the river. The river is published
 as a `river` entity and quays as streets of class `quay`.
+
+With `river: {from_world: true}` the town also takes the rivers the world already has, such as the
+ones the terrain's `erosion` rule finds where the water gathers, so the town and the ground agree
+on where the water runs. They are taken once, when the city starts: a town does not move its
+quays and bridges after a river. Only the parts near the window count, and `narrowest` (km)
+leaves out the streams too narrow to shape a town.
 
 ## Clearing the drawn scene
 

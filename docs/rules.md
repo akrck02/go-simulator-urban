@@ -22,7 +22,7 @@ matches the code. Parameters go under `with:` in a rules file; see go-simulator'
 
 Sets up a city from its scenario (relief, inputs, population curve, centres, grid, floors, walls) and starts each year. Its instance name names the city.
 
-- **Reads:** fields `elevation`
+- **Reads:** entities of kind `river`; fields `elevation`
 - **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`
 
 | Parameter | Type | Default | Meaning |
@@ -47,7 +47,7 @@ Sets up a city from its scenario (relief, inputs, population curve, centres, gri
 | `organic` | map |  | {segment, wander_degrees, field_snapping, continuation, closing, infill}: curvier organic streets |
 | `density` | map |  | {core_front_perches, outer_front_perches, core_depth, outer_depth, core_house_depth, outer_house_depth, outer_floors, radius_factor, back_buildings_from, districts}: density from the core to the outskirts |
 | `squares` | map |  | {per_inhabitants, spacing, size, at_gates, at_bridges}: irregular squares at busy crossings, gates and bridgeheads |
-| `river` | map |  | {reach, alignment, frontage_bonus, quays, longest_bridge, bridge_chance, bridge_spacing, workshops_by_water}: how rivers shape the town |
+| `river` | map |  | {reach, alignment, frontage_bonus, quays, longest_bridge, bridge_chance, bridge_spacing, workshops_by_water, from_world, narrowest}: how rivers shape the town |
 | `colours` | map |  | sRGB "#rrggbb" by kind, use or "garden", for viewing without a scene style; the rest is grey |
 | `clear_nodes` | list |  | scene nodes cleared under the "clear" features when the city starts |
 | `tree_nodes` | list |  | scene nodes of trees, cleared there too and under every new plot |

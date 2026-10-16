@@ -89,12 +89,12 @@ func cityRule(registry *cities) plugin.Definition {
 				{Name: "organic", Type: "map", Summary: "{segment, wander_degrees, field_snapping, continuation, closing, infill}: curvier organic streets"},
 				{Name: "density", Type: "map", Summary: "{core_front_perches, outer_front_perches, core_depth, outer_depth, core_house_depth, outer_house_depth, outer_floors, radius_factor, back_buildings_from, districts}: density from the core to the outskirts"},
 				{Name: "squares", Type: "map", Summary: "{per_inhabitants, spacing, size, at_gates, at_bridges}: irregular squares at busy crossings, gates and bridgeheads"},
-				{Name: "river", Type: "map", Summary: "{reach, alignment, frontage_bonus, quays, longest_bridge, bridge_chance, bridge_spacing, workshops_by_water}: how rivers shape the town"},
+				{Name: "river", Type: "map", Summary: "{reach, alignment, frontage_bonus, quays, longest_bridge, bridge_chance, bridge_spacing, workshops_by_water, from_world, narrowest}: how rivers shape the town"},
 				{Name: "colours", Type: "map", Summary: "sRGB \"#rrggbb\" by kind, use or \"garden\", for viewing without a scene style; the rest is grey"},
 				{Name: "clear_nodes", Type: "list", Summary: "scene nodes cleared under the \"clear\" features when the city starts"},
 				{Name: "tree_nodes", Type: "list", Summary: "scene nodes of trees, cleared there too and under every new plot"},
 			},
-			Reads:  world.Interest{Fields: []string{world.FieldElevation}},
+			Reads:  world.Interest{Fields: []string{world.FieldElevation}, Kinds: []string{world.KindRiver}},
 			Writes: writesCity,
 		},
 		New: func(parameters plugin.Parameters) (plugin.Rule, error) {
@@ -123,6 +123,9 @@ func (rule *cityRuleInstance) Start(context *plugin.Context) error {
 func (rule *cityRuleInstance) Step(context *plugin.Context) error {
 	city, err := rule.registry.find(context.Instance)
 	if err != nil {
+		return err
+	}
+	if err := city.followGround(context.World); err != nil {
 		return err
 	}
 	city.startYear(context.Time)
