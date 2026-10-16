@@ -38,7 +38,7 @@ not know are ignored, so a scenario can carry notes for people.
 | `grid` | none | `[{from_year, angle_degrees, area, block}]`: zones laid out on a lattice of `block` km (0.08) |
 | `open_streets_below` | 0.3 | 0.3: street villages along the roads; 0.5–0.7: compact towns with back streets |
 | `max_floors` | `[{floors: 3}]` | `[{before: year, floors}, …, {floors}]`: the most floors in each period |
-| `rare_floors` | none | `{floors, share}`: only the most wanted share of plots may reach these floors |
+| `rare_floors` | none | `{floors, share}`: at most this share of the plots may reach these floors, the most wanted ones; plots that already stand that high keep their place |
 | `building_depth` | coverage 0.4 → 0.7 | `[from, to]`: houses as deep as from…to times their front |
 | `first_wall` | population 3000 | `{year, population}`: the first wall goes up at the population or, at the latest, in the year |
 | `wall_rise` | 11 m from the start | `{from, height, years}`: metres the year it goes up, then evenly up to `height` |
@@ -75,7 +75,8 @@ not know are ignored, so a scenario can carry notes for people.
 | `districts` | none | `[{name, area, density}]`: areas with their own density |
 
 **`squares`**: `per_inhabitants` (2500), `spacing` (0.2 km), `size` ([0.012, 0.03] km of reach
-from the crossing).
+from the crossing), `at_gates` (true: a square just inside every gate of the standing wall),
+`at_bridges` (true: a square at both ends of every bridge).
 
 **`river`**: `reach` (0.25 km), `alignment` (1, weight of the banks in street directions),
 `frontage_bonus` (1), `quays` (true), `longest_bridge` (1.6 × the river's width), `bridge_chance`

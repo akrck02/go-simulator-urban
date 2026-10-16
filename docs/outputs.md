@@ -12,6 +12,7 @@ them, so snapshots can be measured or drawn by other tools.
 | `parcel` | flat outline | `use`, `coverage`, `floors`, `year`, `front`, `depth`, `street`, `square_metres` |
 | `building` | volume (floors × 3.2 m + 2 m) | `use`, `floors`, `parcel` |
 | `wall` | line with a height | `year`, `current`, `height_m` |
+| `gate` | a point (its transform), no shape | `year` (of its wall), `wall` (index of the wall); only the standing wall's gates, where roads and main streets cross it |
 | `old_wall` | flat line | `year` |
 | `square` | flat outline | — |
 | `bridge` | line | — |
