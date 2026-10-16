@@ -9,7 +9,7 @@ the only rule of its own is the walls', because no published model simulates the
 
 [![Go](https://img.shields.io/github/go-mod/go-version/akrck02/go-simulator-urban)](go.mod)
 ![Plugin](https://img.shields.io/badge/go--simulator-plugin-informational)
-![Protocol](https://img.shields.io/badge/protocol-1-informational)
+![Protocol](https://img.shields.io/badge/protocol-2-informational)
 ![Clock](https://img.shields.io/badge/clock-one%20year%20a%20step-3DDC84)
 ![GEOS](https://img.shields.io/badge/needs-GEOS-lightgrey)
 
