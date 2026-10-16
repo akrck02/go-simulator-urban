@@ -3,7 +3,9 @@ package urban
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -94,4 +96,81 @@ func describe(t *testing.T, current *world.World) string {
 		t.Fatal(err)
 	}
 	return string(encoded)
+}
+
+func TestRiversCanComeFromTheWorld(t *testing.T) {
+	const years = 8
+	directory := writeFlatTown(t, "clear")
+	rules := fmt.Sprintf(townRules, years, filepath.Join(directory, "relief.npy"), filepath.Join(directory, "inputs.geojson"),
+		"          max_floors: [{floors: 2}]\n          river: {from_world: true, narrowest: 0.01}", years)
+	settings, err := configuration.Parse([]byte(rules))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ground := world.New()
+	river := func(identifier string, z, width float32) world.Change {
+		return world.AddEntity(&world.Entity{Identifier: world.Identifier(identifier), Kind: world.KindRiver,
+			Shape: &world.Shape{Line: [][2]float32{{-1.5, z}, {0, z + 0.05}, {1.5, z}}, Width: width}, Properties: map[string]any{"width": float64(width)}})
+	}
+	for _, change := range []world.Change{river("wide", 0.3, 0.02), river("stream", -0.4, 0.003), river("far away", 5, 0.02)} {
+		if err := ground.ApplyChange(change); err != nil {
+			t.Fatal(err)
+		}
+	}
+	engine, err := host.Build(settings, ground, map[string]host.Builtin{"urban": Plugin().ServeConnection})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = engine.Close() })
+	if _, err := engine.Start(); err != nil {
+		t.Fatal(err)
+	}
+	for !engine.Stage("city").Finished() {
+		if _, err := engine.StepStage("city"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var taken []*world.Entity
+	for _, entity := range engine.World.EntitiesOfKind(world.KindRiver) {
+		if strings.HasPrefix(string(entity.Identifier), "town-river-") {
+			taken = append(taken, entity)
+		}
+	}
+	if len(taken) != 1 {
+		t.Fatalf("the town should take only the wide river near it, not the stream nor the far one: %d rivers", len(taken))
+	}
+	for _, parcel := range engine.World.EntitiesOfKind("parcel") {
+		for _, point := range parcel.Shape.Outline {
+			if math.Abs(float64(point[1])-0.3-0.05*(1-math.Abs(float64(point[0]))/1.5)) < 0.009 && math.Abs(float64(point[0])) < 1 {
+				t.Fatalf("parcel %s is built in the river taken from the world: %v", parcel.Identifier, point)
+			}
+		}
+	}
+}
+
+func TestTheTownFollowsTheGroundOfTheWorld(t *testing.T) {
+	directory := writeFlatTown(t, "clear")
+	field := elevationOf(t, filepath.Join(directory, "relief.npy"))
+	current := world.New()
+	if err := current.ApplyChange(world.SetFieldValues(field)); err != nil {
+		t.Fatal(err)
+	}
+	city := &City{Name: "town", Scenario: &Scenario{}, groundValues: slices.Clone(field.Values)}
+	city.Terrain, _ = TerrainFromField(current.Field(world.FieldElevation))
+	before := city.Terrain
+	if err := city.followGround(current); err != nil || city.Terrain != before {
+		t.Fatalf("the same ground should not be taken again (%v)", err)
+	}
+	lowered := slices.Clone(field.Values)
+	lowered[0] -= 5 // the erosion rule cut a little into the ground
+	if err := current.ApplyChange(world.SetFieldValues(&world.FieldPatch{Name: world.FieldElevation, Columns: field.Columns, Rows: field.Rows,
+		Extent: field.Extent, Values: lowered})); err != nil {
+		t.Fatal(err)
+	}
+	if err := city.followGround(current); err != nil {
+		t.Fatal(err)
+	}
+	if city.Terrain == before || city.Terrain.heights[0] != float64(lowered[0]) {
+		t.Fatal("the town should take the ground again when the world's elevation changes")
+	}
 }

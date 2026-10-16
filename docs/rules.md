@@ -1,6 +1,6 @@
 # 📋 Rules of the urban plugin
 
-Version 0.1.0, protocol 1. Pre-industrial urban growth, year by year, on real relief (Weber et al. 2009; Conzen 1960; Hillier and Iida 2005).
+Version 0.1.0, protocol 2. Pre-industrial urban growth, year by year, on real relief (Weber et al. 2009; Conzen 1960; Hillier and Iida 2005).
 
 This reference is generated from what the plugin itself tells the host (the `describe` message), so it always
 matches the code. Parameters go under `with:` in a rules file; see go-simulator's
@@ -22,8 +22,8 @@ matches the code. Parameters go under `with:` in a rules file; see go-simulator'
 
 Sets up a city from its scenario (relief, inputs, population curve, centres, grid, floors, walls) and starts each year. Its instance name names the city.
 
-- **Reads:** fields `elevation`
-- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`
+- **Reads:** entities of kind `river`; fields `elevation`
+- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`, `river`
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
@@ -47,7 +47,7 @@ Sets up a city from its scenario (relief, inputs, population curve, centres, gri
 | `organic` | map |  | {segment, wander_degrees, field_snapping, continuation, closing, infill}: curvier organic streets |
 | `density` | map |  | {core_front_perches, outer_front_perches, core_depth, outer_depth, core_house_depth, outer_house_depth, outer_floors, radius_factor, back_buildings_from, districts}: density from the core to the outskirts |
 | `squares` | map |  | {per_inhabitants, spacing, size, at_gates, at_bridges}: irregular squares at busy crossings, gates and bridgeheads |
-| `river` | map |  | {reach, alignment, frontage_bonus, quays, longest_bridge, bridge_chance, bridge_spacing, workshops_by_water}: how rivers shape the town |
+| `river` | map |  | {reach, alignment, frontage_bonus, quays, longest_bridge, bridge_chance, bridge_spacing, workshops_by_water, from_world, narrowest}: how rivers shape the town |
 | `colours` | map |  | sRGB "#rrggbb" by kind, use or "garden", for viewing without a scene style; the rest is grey |
 | `clear_nodes` | list |  | scene nodes cleared under the "clear" features when the city starts |
 | `tree_nodes` | list |  | scene nodes of trees, cleared there too and under every new plot |
@@ -57,7 +57,7 @@ Sets up a city from its scenario (relief, inputs, population curve, centres, gri
 Fills existing plots before the city spreads (burgage cycle).
 
 - **Reads:** nothing from other plugins
-- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`
+- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`, `river`
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
@@ -68,7 +68,7 @@ Fills existing plots before the city spreads (burgage cycle).
 Lays plots along free frontages and opens new streets when none are left.
 
 - **Reads:** nothing from other plugins
-- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`
+- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`, `river`
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
@@ -79,7 +79,7 @@ Lays plots along free frontages and opens new streets when none are left.
 Raises the first wall and new ones when the suburbs grow too big.
 
 - **Reads:** nothing from other plugins
-- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`
+- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`, `river`
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
@@ -90,7 +90,7 @@ Raises the first wall and new ones when the suburbs grow too big.
 Removes dead ends nobody built on after some years.
 
 - **Reads:** nothing from other plugins
-- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`
+- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`, `river`
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
@@ -102,7 +102,7 @@ Removes dead ends nobody built on after some years.
 Cuts an alley across blocks wider than a size (Siksna 1997).
 
 - **Reads:** nothing from other plugins
-- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`
+- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`, `river`
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
@@ -114,7 +114,7 @@ Cuts an alley across blocks wider than a size (Siksna 1997).
 Angular segment analysis: main streets, the market square and shops.
 
 - **Reads:** nothing from other plugins
-- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`
+- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`, `river`
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|
@@ -139,7 +139,7 @@ Emits an "indicators" event with the city's form measures in the listed years (e
 Opens irregular squares at busy crossings, inside gates and at bridgeheads (scenario "squares").
 
 - **Reads:** nothing from other plugins
-- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`
+- **Writes:** `street`, `parcel`, `building`, `wall`, `old_wall`, `gate`, `square`, `bridge`, `river`
 
 | Parameter | Type | Default | Meaning |
 |---|---|---|---|

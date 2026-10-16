@@ -112,6 +112,7 @@ type City struct {
 	nodeWeights      map[int]float64 // this year's, by node
 	weightsYear      float64
 	published        map[string]string // entity identifier → signature of what was sent
+	groundValues     []float32         // the world's elevation the terrain was taken from (nil with a relief file)
 }
 
 // newCity loads a scenario's inputs and lays out the roads that already exist. The ground is the
@@ -122,10 +123,14 @@ func newCity(name string, scenario *Scenario, current *world.World) (*City, erro
 	if err != nil {
 		return nil, fmt.Errorf("city %q: %w", name, err)
 	}
+	var groundValues []float32
+	if scenario.Relief.Path == "" {
+		groundValues = slices.Clone(current.Field(world.FieldElevation).Values)
+	}
 	city := &City{Name: name, Scenario: scenario, Terrain: terrain, Network: NewNetwork(), Belts: emptyGeometry(),
 		Window: emptyGeometry(), Obstacles: emptyGeometry(), Rivers: emptyGeometry(), WallSupport: emptyGeometry(), ClearArea: emptyGeometry(), WallOutline: emptyGeometry(),
 		random: rand.New(rand.NewPCG(scenario.Seed, 0x5eed)), parcelCells: map[cellKey]map[int]bool{},
-		frontagesDone: map[frontage]bool{}, published: map[string]string{}, weightsYear: math.NaN()}
+		frontagesDone: map[frontage]bool{}, published: map[string]string{}, weightsYear: math.NaN(), groundValues: groundValues}
 	if scenario.Features != "" {
 		if err := city.loadFeatures(plugin.Path(scenario.Features)); err != nil {
 			return nil, err
@@ -134,6 +139,7 @@ func newCity(name string, scenario *Scenario, current *world.World) (*City, erro
 	if city.Window.IsEmpty() {
 		return nil, fmt.Errorf("city %q: the features need a \"window\" polygon (where the city may grow)", name)
 	}
+	city.addWorldRivers(current)
 	return city, nil
 }
 
@@ -147,6 +153,24 @@ func terrainOf(scenario *Scenario, current *world.World) (*Terrain, error) {
 		return nil, fmt.Errorf("no ground: put the terrain plugin before urban in the rules file, or give a relief")
 	}
 	return TerrainFromField(elevation)
+}
+
+// followGround takes the ground again when the world's elevation changed, as it does when the
+// terrain's erosion rule moves it. A relief file of the scenario stays as it is.
+func (city *City) followGround(current *world.World) error {
+	if city.groundValues == nil {
+		return nil
+	}
+	field := current.Field(world.FieldElevation)
+	if field == nil || slices.Equal(field.Values, city.groundValues) {
+		return nil
+	}
+	terrain, err := TerrainFromField(field)
+	if err != nil {
+		return fmt.Errorf("city %q: %w", city.Name, err)
+	}
+	city.Terrain, city.groundValues = terrain, slices.Clone(field.Values)
+	return nil
 }
 
 // loadFeatures reads the GeoJSON inputs: every feature has a "role".
