@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/akrck02/go-simulator/plugin"
+	"github.com/akrck02/go-simulator/spatial"
 	"github.com/akrck02/go-simulator/world"
 	"github.com/twpayne/go-geos"
 )
@@ -133,6 +134,9 @@ func (city *City) clearOldScene(context *plugin.Context) {
 // signatureOf sums up what is shown of an entity, to send only what changed (maps print sorted).
 func signatureOf(entity *world.Entity) string {
 	shape := entity.Shape
+	if shape == nil {
+		return fmt.Sprintf("%s|%v|%v", entity.Kind, entity.Transform.Position(), entity.Properties)
+	}
 	return fmt.Sprintf("%s|%v|%v|%g|%g|%v", entity.Kind, shape.Outline, shape.Line, shape.Width, shape.Height, entity.Properties)
 }
 
@@ -221,6 +225,9 @@ func (city *City) buildingEntity(parcel *Parcel, footprint *geos.Geom, suffix st
 func (city *City) addWallEntities(add func(*world.Entity)) {
 	for index, wall := range city.Walls {
 		current := index == len(city.Walls)-1
+		if current {
+			city.addGateEntities(index, wall, add)
+		}
 		for part, line := range linesOf(wall.Line) {
 			identifier := fmt.Sprintf("%s-wall-%d-%d", city.Name, index, part)
 			properties := map[string]any{"year": wall.Year, "current": current}
@@ -232,6 +239,16 @@ func (city *City) addWallEntities(add func(*world.Entity)) {
 				add(lineEntity(identifier, "old_wall", coordinatesOf(line), oldWallWidth, 0, "old_walls", city.colour("old_wall"), properties))
 			}
 		}
+	}
+}
+
+// addGateEntities publishes the gates of the standing wall as points, where roads and main streets
+// cross it, so a scene can put a gate there. The gates of older walls went with them.
+func (city *City) addGateEntities(wallIndex int, wall *Wall, add func(*world.Entity)) {
+	for index, gate := range wall.Gates {
+		position := spatial.Translation(spatial.Vector{float32(gate.X), 0, float32(gate.Z)})
+		add(&world.Entity{Identifier: world.Identifier(fmt.Sprintf("%s-gate-%d-%d", city.Name, wallIndex, index)), Kind: "gate",
+			Transform: &position, Properties: map[string]any{"year": wall.Year, "wall": wallIndex}})
 	}
 }
 

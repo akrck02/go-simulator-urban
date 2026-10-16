@@ -54,7 +54,7 @@ func (city *City) densifyBy(wanted float64) float64 {
 	limit := max(1, int(advancingShare*float64(len(city.Parcels))))
 	for _, parcel := range candidates[:min(limit, len(candidates))] {
 		before := parcel.BuiltSquareMetres()
-		city.advance(parcel, city.floorCapAt(parcel.Centre, limits.forPressure(pressures[parcel])))
+		city.advance(parcel, city.floorCapAt(parcel.Centre, limits.forParcel(parcel)))
 		gained += parcel.BuiltSquareMetres() - before
 		if gained >= wanted {
 			break
@@ -77,11 +77,10 @@ func (city *City) pressures() map[*Parcel]float64 {
 func (city *City) densifiableParcels(pressures map[*Parcel]float64, limits floorLimits) []*Parcel {
 	var candidates []*Parcel
 	for _, parcel := range city.Parcels {
-		pressure, built := pressures[parcel]
-		if !built {
+		if _, built := pressures[parcel]; !built {
 			continue
 		}
-		if city.canDeepen(parcel) || parcel.Floors < city.floorCapAt(parcel.Centre, limits.forPressure(pressure)) || city.canBuildAtTheBack(parcel) {
+		if city.canDeepen(parcel) || parcel.Floors < city.floorCapAt(parcel.Centre, limits.forParcel(parcel)) || city.canBuildAtTheBack(parcel) {
 			candidates = append(candidates, parcel)
 		}
 	}
@@ -89,7 +88,8 @@ func (city *City) densifiableParcels(pressures map[*Parcel]float64, limits floor
 }
 
 // advance moves a plot one step: the house grows towards the back, gains a floor or, in the dense
-// core, the plot builds at its back.
+// core, the plot builds at its back. A plot that can do none of these stays as it is: it never
+// goes past its floor limit.
 func (city *City) advance(parcel *Parcel, cap int) {
 	switch {
 	case city.canDeepen(parcel):
@@ -98,8 +98,6 @@ func (city *City) advance(parcel *Parcel, cap int) {
 		parcel.Floors++
 	case city.canBuildAtTheBack(parcel):
 		city.buildAtTheBack(parcel)
-	default:
-		parcel.Floors++
 	}
 }
 
@@ -115,10 +113,12 @@ func (city *City) pressureOn(parcel *Parcel) float64 {
 	return pressure
 }
 
-// firstFloors is the number of floors new houses get.
-func (city *City) firstFloors() int {
-	if city.Scenario.FloorsIn(city.Year) <= 2 {
+// firstFloorsAt is the number of floors a new house gets at a place: one, or two when the year
+// allows three or more, but never more than the outskirts allow there.
+func (city *City) firstFloorsAt(point Point) int {
+	usual := city.Scenario.FloorsIn(city.Year)
+	if usual <= 2 {
 		return 1
 	}
-	return 2
+	return min(2, city.floorCapAt(point, usual))
 }

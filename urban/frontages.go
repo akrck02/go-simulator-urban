@@ -146,9 +146,10 @@ func (city *City) parcelsAlong(side frontage) []*Parcel {
 		if piece == nil {
 			continue
 		}
-		parcel := &Parcel{Polygon: piece, Centre: centroidOf(piece), Edge: side.edge, Front: front, Depth: depth,
+		centre := centroidOf(piece)
+		parcel := &Parcel{Polygon: piece, Centre: centre, Edge: side.edge, Front: front, Depth: depth,
 			Direction: direction, Normal: normal, SquareMetres: piece.Area() * 1e6, Coverage: coverage,
-			Floors: city.firstFloors(), Use: use, Year: city.Year}
+			Floors: city.firstFloorsAt(centre), Use: use, Year: city.Year}
 		city.startBuilding(parcel)
 		city.waterfrontUse(parcel)
 		parcels = append(parcels, parcel)

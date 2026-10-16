@@ -35,8 +35,11 @@ Rules run in the order of the rules file, usually:
 2. **Densify** (Conzen 1960; Caniggia and Maffei). Before the city spreads, its plots fill up:
    each year up to a quarter of the plots advance, the most wanted first. The house first takes the
    back of the plot (coverage up to 0.7, or the house depth the scenario gives) and then gains a
-   floor, up to the year's maximum. Only a few of the most wanted plots may reach `rare_floors`. In
-   a dense core, a full plot builds at the back, round a yard.
+   floor, up to the year's maximum (new houses start with one floor, or two when the year allows
+   three or more, and never more than the outskirts allow). `rare_floors` is a quota: at most its
+   `share` of the plots may stand that high. Plots already that high keep their place in it and the
+   most wanted of the rest fill what is left, so the share does not creep up as the town's most
+   wanted places move. In a dense core, a full plot builds at the back, round a yard.
 3. **Expand** (Weber et al. 2009). What is still missing goes to new plots along the most wanted
    free frontages: close to the growth centres, on gentle ground (no plot steeper than 0.4), inside
    the window, out of obstacles and water. A frontage less wanted than `open_streets_below` waits:
@@ -46,7 +49,8 @@ Rules run in the order of the rules file, usually:
 4. **Walls** (the plugin's own rule). The first wall goes up when the population reaches
    `first_wall.population` or, at the latest, in `first_wall.year`. It follows the concave hull of
    what is built (or the given `wall_outline`), tied to the supporting rock when there is one, with
-   gates where roads and main streets cross it and a clear strip inside. When the suburbs outside
+   gates where roads and main streets cross it (published as `gate` points) and a clear strip
+   inside. When the suburbs outside
    hold more than `new_wall_when_outside` of the floor space and the wall is at least 12 years old,
    a new one goes up and the old one becomes a ring road with a belt of gardens and convents
    (Whitehand 1967). Its height can rise over the years (`wall_rise`) or follow the calendar

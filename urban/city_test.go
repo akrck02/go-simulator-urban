@@ -113,6 +113,15 @@ func TestATownGrowsHousesStreetsAndAWall(t *testing.T) {
 	if count("wall") == 0 {
 		t.Fatalf("a wall should go up by year 25")
 	}
+	gates := engine.World.EntitiesOfKind("gate")
+	if len(gates) < 2 {
+		t.Fatalf("both roads cross the wall, so it should have gates: %d", len(gates))
+	}
+	for _, gate := range gates {
+		if gate.Transform == nil {
+			t.Fatalf("gate %s should stand at a point", gate.Identifier)
+		}
+	}
 	var indicators map[string]any
 	for _, set := range sets {
 		for _, change := range set.Changes {

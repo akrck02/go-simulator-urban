@@ -2,6 +2,7 @@ package urban
 
 import (
 	"math"
+	"sort"
 )
 
 // How a house grows on its plot. By default (Conzen's burgage cycle) the building covers 0.4 of the
@@ -60,25 +61,45 @@ func coverageOf(parcel *Parcel) float64 {
 // maximum for the most wanted share of the plots.
 type floorLimits struct {
 	usual, rare int
-	threshold   float64 // pressure from which a plot is among the most wanted
+	taller      map[*Parcel]bool // plots that may reach the rare maximum
 }
 
+// floorLimitsNow works out this year's limits. The rare maximum is a quota, not a threshold: plots
+// that already stand above the usual maximum keep their place in it, and only the most wanted of
+// the rest fill what is left, so the share of tall houses stays at the scenario's share instead of
+// growing as the most wanted places move with the town.
 func (city *City) floorLimitsNow(pressures map[*Parcel]float64) floorLimits {
-	limits := floorLimits{usual: city.Scenario.FloorsIn(city.Year), threshold: math.Inf(1)}
+	limits := floorLimits{usual: city.Scenario.FloorsIn(city.Year)}
 	rare := city.Scenario.RareFloors
 	if rare == nil || rare.Floors <= limits.usual || rare.Share <= 0 {
 		return limits
 	}
-	values := make([]float64, 0, len(pressures))
-	for _, pressure := range pressures {
-		values = append(values, pressure)
+	limits.rare, limits.taller = rare.Floors, map[*Parcel]bool{}
+	quota := int(rare.Share * float64(len(pressures)))
+	var others []*Parcel
+	for parcel := range pressures {
+		if parcel.Floors > limits.usual {
+			limits.taller[parcel] = true
+		} else {
+			others = append(others, parcel)
+		}
 	}
-	limits.rare, limits.threshold = rare.Floors, quantile(values, 1-rare.Share)
+	// a fixed order (the most wanted first, then the oldest) keeps runs repeatable
+	sort.Slice(others, func(first, second int) bool {
+		if pressures[others[first]] != pressures[others[second]] {
+			return pressures[others[first]] > pressures[others[second]]
+		}
+		return others[first].Identifier < others[second].Identifier
+	})
+	for _, parcel := range others[:max(0, min(len(others), quota-len(limits.taller)))] {
+		limits.taller[parcel] = true
+	}
 	return limits
 }
 
-func (limits floorLimits) forPressure(pressure float64) int {
-	if limits.rare > 0 && pressure >= limits.threshold {
+// forParcel is the most floors a plot may reach this year, before the outskirts lower it.
+func (limits floorLimits) forParcel(parcel *Parcel) int {
+	if limits.taller[parcel] {
 		return limits.rare
 	}
 	return limits.usual

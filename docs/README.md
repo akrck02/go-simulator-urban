@@ -16,8 +16,7 @@ New here? Start with the [project README](../README.md).
 
 - Pictures of the 3D viewer itself. The pictures in these pages are 2D drawings of what the plugin
   answered, not screenshots (see [how the pictures were made](how-it-works.md#how-the-pictures-were-made)).
-- Gates as entities. The plugin finds the gates where roads and main streets cross a wall and opens
-  squares just inside them, but it does not publish them, although `gate` is in the
-  [rules reference](rules.md)'s list of what the rules write. So they are not in the pictures either.
+- Gates in the pictures. The plugin publishes the standing wall's gates as `gate` points (see
+  [outputs](outputs.md)), but the pictures were drawn before, so they do not show them.
 - Grid zones, districts and walls tied to rock are described in the [model](model.md) and the
   [scenario](scenario.md), but the example town in the pictures uses none of them.

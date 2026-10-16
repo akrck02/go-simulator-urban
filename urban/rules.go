@@ -88,7 +88,7 @@ func cityRule(registry *cities) plugin.Definition {
 				{Name: "building_depth", Type: "list", Summary: "[from, to]: houses as deep as from…to times their front (without it, coverage grows 0.4 → 0.7)"},
 				{Name: "organic", Type: "map", Summary: "{segment, wander_degrees, field_snapping, continuation, closing, infill}: curvier organic streets"},
 				{Name: "density", Type: "map", Summary: "{core_front_perches, outer_front_perches, core_depth, outer_depth, core_house_depth, outer_house_depth, outer_floors, radius_factor, back_buildings_from, districts}: density from the core to the outskirts"},
-				{Name: "squares", Type: "map", Summary: "{per_inhabitants, spacing, size}: irregular squares at busy crossings, gates and bridgeheads"},
+				{Name: "squares", Type: "map", Summary: "{per_inhabitants, spacing, size, at_gates, at_bridges}: irregular squares at busy crossings, gates and bridgeheads"},
 				{Name: "river", Type: "map", Summary: "{reach, alignment, frontage_bonus, quays, longest_bridge, bridge_chance, bridge_spacing, workshops_by_water}: how rivers shape the town"},
 				{Name: "colours", Type: "map", Summary: "sRGB \"#rrggbb\" by kind, use or \"garden\", for viewing without a scene style; the rest is grey"},
 				{Name: "clear_nodes", Type: "list", Summary: "scene nodes cleared under the \"clear\" features when the city starts"},
