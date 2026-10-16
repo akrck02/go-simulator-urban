@@ -1,4 +1,4 @@
-# The city's scenario
+# 🗺️ The city's scenario
 
 The scenario is the `with:` of the `city` rule, or files it includes
 (`with: {include: [derived.yaml, town.yaml]}`). Coordinates are world coordinates on the ground
@@ -51,7 +51,9 @@ not know are ignored, so a scenario can carry notes for people.
 | `tree_nodes` | none | scene nodes of trees, cleared there too and under every new plot |
 | `colours` | grey | sRGB `"#rrggbb"` by kind, use or `"garden"`, for viewing without a scene style |
 
-**`organic`** — curvier organic streets
+### `organic`
+
+Curvier organic streets.
 
 | Key | Default | Meaning |
 |---|---|---|
@@ -62,7 +64,9 @@ not know are ignored, so a scenario can carry notes for people.
 | `closing` | 1.5 | how far ahead (× the piece) a street looks to close a block |
 | `infill` | 0 | extra want of frontages among built plots, so streets fill before new ones open |
 
-**`density`** — from the core to the outskirts
+### `density`
+
+From the core to the outskirts.
 
 | Key | Default | Meaning |
 |---|---|---|
@@ -74,11 +78,15 @@ not know are ignored, so a scenario can carry notes for people.
 | `back_buildings_from` | 0 (never) | density from which full plots build at the back, round a yard |
 | `districts` | none | `[{name, area, density}]`: areas with their own density |
 
-**`squares`**: `per_inhabitants` (2500), `spacing` (0.2 km), `size` ([0.012, 0.03] km of reach
+### `squares`
+
+Irregular squares at busy crossings, gates and bridgeheads: `per_inhabitants` (2500), `spacing` (0.2 km), `size` ([0.012, 0.03] km of reach
 from the crossing), `at_gates` (true: a square just inside every gate of the standing wall),
 `at_bridges` (true: a square at both ends of every bridge).
 
-**`river`**: `reach` (0.25 km), `alignment` (1, weight of the banks in street directions),
+### `river`
+
+How rivers shape the town: `reach` (0.25 km), `alignment` (1, weight of the banks in street directions),
 `frontage_bonus` (1), `quays` (true), `longest_bridge` (1.6 × the river's width), `bridge_chance`
 (0.6), `bridge_spacing` (0.15 km), `workshops_by_water` (0.3).
 
