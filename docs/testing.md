@@ -1,4 +1,4 @@
-# Testing
+# 🧪 Testing
 
 ## Different kinds of places
 
@@ -20,6 +20,13 @@ what towns of that size covered.
 URBAN_PLACES_OUTPUT=places go test -run DifferentKinds -v ./urban     # -short skips the large city
 uv run --no-project --with matplotlib python tools/view_snapshot.py places.png places/*/
 ```
+
+<p align="center">
+  <img alt="The six test places at their last year, drawn by tools/view_snapshot.py: a coastal village as a ribbon along the shore; a river market town with a cross of streets inside a wall; a hilltop town in rings round the hill inside a wall; a planned grid town in regular blocks inside a wall; a valley street village along a river; and a large plain city with a dense core, two walls, a ring road with its belt, and suburbs" src="images/places.jpg" width="880">
+</p>
+
+The picture is what those two commands draw (the window dashed, roads in yellow, rivers blue,
+obstacles grey, houses by use, walls black), made smaller for this page.
 
 ## Everything else
 
