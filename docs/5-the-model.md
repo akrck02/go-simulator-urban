@@ -14,10 +14,10 @@ raises its first wall at year 60.*
 
 Every rule comes from a published model; the only rule of its own is the walls', because no
 published model simulates them. It knows nothing about any particular city: the
-[scenario](scenario.md) says where, how many people and when.
+[scenario](4-writing-a-scenario.md) says where, how many people and when.
 
 The other pictures in this page show a second made-up town, a river town that grows from 600 to
-36,000 people in 100 years; its whole rules file is in [getting started](getting-started.md#a-whole-rules-file).
+36,000 people in 100 years; its whole rules file is in [getting started](3-getting-started.md#a-whole-rules-file).
 
 ## The year
 
@@ -114,7 +114,7 @@ and the old line becomes a ring road; new plots in a belt along it are large gar
   <img alt="The river town at year 100 with its streets coloured by class: roads that reach the town, quays along both banks of the river, a ring road where the first wall stood, alleys across large blocks, streets the town opened, and two main streets; bridges and squares are marked" src="images/streets.svg" width="880">
 </p>
 
-Every street piece has a class (see [outputs](outputs.md#entities)). Roads come with the inputs;
+Every street piece has a class (see [outputs](6-what-it-writes.md#entities)). Roads come with the inputs;
 quays line the river; a ring follows a wall that was replaced; alleys split large blocks; the rest
 are streets the town opened. Space syntax turns the most chosen streets and alleys into main
 streets. In the river town, the three roads carry most of the movement, so only two pieces of the
@@ -162,4 +162,4 @@ feature marks it: at the start the plugin sends a `clear_area` for the scenario'
 GEOS, the geometry engine shapely uses: `sudo apt install libgeos-dev`, `sudo dnf install
 geos-devel` or `brew install geos`. While it is not installed, a `.geos-local/env.sh` (ignored by
 git) can point cgo at an unpacked copy: `. .geos-local/env.sh` before building. More in
-[getting started](getting-started.md#geos).
+[getting started](3-getting-started.md#geos).

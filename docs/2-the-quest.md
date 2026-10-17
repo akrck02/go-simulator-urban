@@ -137,7 +137,7 @@ rules:
     color: "#9a9182"
 ```
 
-and `look/main.go` (from the [terrain quest](https://github.com/akrck02/go-simulator-terrain/blob/main/docs/quest.md#looking-at-a-result)),
+and `look/main.go` (from the [terrain quest](https://github.com/akrck02/go-simulator-terrain/blob/main/docs/2-the-quest.md#looking-at-a-result)),
 which tells the builder the snapshot's map is in kilometres with z to the south:
 
 ```go
@@ -257,7 +257,7 @@ doors on the street.
 
 ![Achievement unlocked: Founder](images/quest/achievement-founder.svg)
 
-Learn more: [Writing a scenario](scenario.md) · [The model](model.md)
+Learn more: [Writing a scenario](4-writing-a-scenario.md) · [The model](5-the-model.md)
 
 ---
 
@@ -445,10 +445,10 @@ it came out as planned.
 
 | Idea | Difficulty | Hint |
 |---|---|---|
-| Taller in the core | ⭐ | `density` and `rare_floors` ([scenario](scenario.md)) |
+| Taller in the core | ⭐ | `density` and `rare_floors` ([scenario](4-writing-a-scenario.md)) |
 | Curvier streets | ⭐ | `organic: {wander_degrees: 20}` |
-| Watch it grow live | ⭐⭐ | `go-simulator/cmd/simulator` with a `scene_style` (go-simulator's [rules files](https://github.com/akrck02/go-simulator/blob/main/docs/rules-files.md#scene_style)) |
-| The town on an island of your own | ⭐⭐⭐ | The [terrain](https://github.com/akrck02/go-simulator-terrain/blob/main/docs/quest.md) and [flora](https://github.com/akrck02/go-simulator-flora/blob/main/docs/quest.md) quests, with `tree_nodes` to clear the forest |
+| Watch it grow live | ⭐⭐ | `go-simulator/cmd/simulator` with a `scene_style` (go-simulator's [rules files](https://github.com/akrck02/go-simulator/blob/main/docs/4-guides/1-rules-files.md#scene_style)) |
+| The town on an island of your own | ⭐⭐⭐ | The [terrain](https://github.com/akrck02/go-simulator-terrain/blob/main/docs/2-the-quest.md) and [flora](https://github.com/akrck02/go-simulator-flora/blob/main/docs/2-the-quest.md) quests, with `tree_nodes` to clear the forest |
 
 ## Troubleshooting
 
@@ -462,4 +462,4 @@ it came out as planned.
 
 ---
 
-[← All the documentation](README.md)
+[← All the documentation](1-overview.md)
