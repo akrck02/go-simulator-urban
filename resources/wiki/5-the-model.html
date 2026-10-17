@@ -14,10 +14,10 @@ raises its first wall at year 60.</em></p>
 
 <p>Every rule comes from a published model; the only rule of its own is the walls&rsquo;, because no
 published model simulates them. It knows nothing about any particular city: the
-<a href="./scenario">scenario</a> says where, how many people and when.</p>
+<a href="./4-writing-a-scenario">scenario</a> says where, how many people and when.</p>
 
 <p>The other pictures in this page show a second made-up town, a river town that grows from 600 to
-36,000 people in 100 years; its whole rules file is in <a href="./getting-started">getting started</a>.</p>
+36,000 people in 100 years; its whole rules file is in <a href="./3-getting-started">getting started</a>.</p>
 
 <h2 id="the-year">The year</h2>
 
@@ -118,7 +118,7 @@ the core; wide plots with gardens and lower houses outside. Districts can set th
   <img alt="The river town at year 100 with its streets coloured by class: roads that reach the town, quays along both banks of the river, a ring road where the first wall stood, alleys across large blocks, streets the town opened, and two main streets; bridges and squares are marked" src="images/streets.svg" width="880">
 </p>
 
-<p>Every street piece has a class (see <a href="./outputs">outputs</a>). Roads come with the inputs;
+<p>Every street piece has a class (see <a href="./6-what-it-writes">outputs</a>). Roads come with the inputs;
 quays line the river; a ring follows a wall that was replaced; alleys split large blocks; the rest
 are streets the town opened. Space syntax turns the most chosen streets and alleys into main
 streets. In the river town, the three roads carry most of the movement, so only two pieces of the
@@ -168,4 +168,4 @@ feature marks it: at the start the plugin sends a <code>clear_area</code> for th
 <p>GEOS, the geometry engine shapely uses: <code>sudo apt install libgeos-dev</code>, <code>sudo dnf install
 geos-devel</code> or <code>brew install geos</code>. While it is not installed, a <code>.geos-local/env.sh</code> (ignored by
 git) can point cgo at an unpacked copy: <code>. .geos-local/env.sh</code> before building. More in
-<a href="./getting-started">getting started</a>.</p>
+<a href="./3-getting-started">getting started</a>.</p>

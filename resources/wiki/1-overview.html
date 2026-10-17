@@ -1,0 +1,216 @@
+<h1 id="welcome-to-go-simulator-urban">Welcome to go-simulator-urban 👋</h1>
+
+<p><strong>The urban plugin grows towns</strong>, year after year: a village where roads meet becomes a town with streets of its own, squares, bridges and walls.</p>
+
+<p align="center"><img alt="A town growing over a century" src="images/town_growth.jpg" width="720"></p>
+
+<p>You give it a place (the area it may use, the roads and rivers already there) and how many people live there each year; it finds room for them plot by plot where people would most want to live, and builds streets, squares and walls as the town needs them.</p>
+
+<h2 id="is-it-for-me">Is it for me?</h2>
+
+<ul>
+<li>✅ You use <a href="https://github.com/akrck02/go-simulator" target="_blank">go-simulator</a> and want <strong>towns that grow</strong>.</li>
+<li>✅ You want to <strong>set it up by writing a rules file</strong>: no programming needed.</li>
+<li>✅ You are curious about <strong>the science</strong> behind it: the pages explain the model with pictures.</li>
+</ul>
+
+<h2 id="where-to-start">Where to start</h2>
+
+<p>Pick the line that sounds like you.</p>
+
+<table>
+<thead>
+<tr>
+<th>If you…</th>
+<th>Read</th>
+<th>Time</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>are <strong>new</strong> and want to see it work</td>
+<td>🏴‍☠️ <a href="./2-the-quest">The quest</a>: a market town that grows for a century, in 5 levels</td>
+<td>45 min</td>
+</tr>
+
+<tr>
+<td>want to <strong>run its example</strong></td>
+<td><a href="./3-getting-started">Getting started</a></td>
+<td>10 min</td>
+</tr>
+
+<tr>
+<td>want to <strong>set up a town</strong> of your own</td>
+<td><a href="./4-writing-a-scenario">Writing a scenario</a></td>
+<td>15 min</td>
+</tr>
+
+<tr>
+<td>are <strong>looking up</strong> a parameter</td>
+<td><a href="./8-rules-reference">Rules reference</a></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="all-the-pages-in-reading-order">All the pages, in reading order</h2>
+
+<p>The menu on the left (or the files in <code>docs/</code>) follows this order.</p>
+
+<p><strong>Start</strong></p>
+
+<ul>
+<li><a href="./1-overview">Overview</a>: this page</li>
+<li><a href="./2-the-quest">The quest</a></li>
+<li><a href="./3-getting-started">Getting started</a></li>
+</ul>
+
+<p><strong>Understand</strong></p>
+
+<ul>
+<li><a href="./4-writing-a-scenario">Writing a scenario</a></li>
+<li><a href="./5-the-model">The model</a></li>
+<li><a href="./6-what-it-writes">What it writes</a></li>
+<li><a href="./7-how-it-works">How it works</a></li>
+<li><a href="./9-testing">Testing</a></li>
+</ul>
+
+<p><strong>Reference</strong></p>
+
+<ul>
+<li><a href="./8-rules-reference">Rules reference</a></li>
+</ul>
+
+<h2 id="not-done-yet">🚧 Not done yet</h2>
+
+<ul>
+<li>Pictures of the 3D viewer itself. The pictures in these pages are 2D drawings of what the plugin
+answered, not screenshots (see <a href="./7-how-it-works">how the pictures were made</a>).</li>
+<li>Gates in the pictures. The plugin publishes the standing wall&rsquo;s gates as <code>gate</code> points (see
+<a href="./6-what-it-writes">outputs</a>), but the pictures were drawn before, so they do not show them.</li>
+<li>Grid zones, districts and walls tied to rock are described in the <a href="./5-the-model">model</a> and the
+<a href="./4-writing-a-scenario">scenario</a>, but the example town in the pictures uses none of them.</li>
+</ul>
+
+<h2 id="words-you-will-meet">Words you will meet</h2>
+
+<table>
+<thead>
+<tr>
+<th>Word</th>
+<th>What it means</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Terminal</td>
+<td>The window where you type commands: <em>Terminal</em> on macOS and Linux, <em>PowerShell</em> on Windows.</td>
+</tr>
+
+<tr>
+<td>Repository</td>
+<td>A project&rsquo;s folder of files, kept on GitHub. <code>git clone &lt;address&gt;</code> copies it to your computer.</td>
+</tr>
+
+<tr>
+<td>Plugin</td>
+<td>A small program that adds one ability to another: here, one kind of simulation each.</td>
+</tr>
+
+<tr>
+<td>Rules file</td>
+<td>A text file (YAML) that says which plugins to use, with which numbers, for how long: no programming needed.</td>
+</tr>
+
+<tr>
+<td>Field</td>
+<td>A grid of numbers laid over the world: the height of every spot, its temperature, its rain.</td>
+</tr>
+
+<tr>
+<td>Quest</td>
+<td>The tutorial of these docs: short levels, each ending with something that works and an achievement.</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="the-family">The family</h2>
+
+<p>go-simulator-urban is one of a family of small projects that work together:</p>
+
+<table>
+<thead>
+<tr>
+<th>Project</th>
+<th>What it does</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><a href="https://github.com/akrck02/go-renderer" target="_blank">go-renderer</a></td>
+<td>draws 3D scenes and flat interfaces</td>
+</tr>
+
+<tr>
+<td><a href="https://github.com/akrck02/go-ui" target="_blank">go-ui</a></td>
+<td>buttons, panels and whole applications</td>
+</tr>
+
+<tr>
+<td><a href="https://github.com/akrck02/go-ui-android" target="_blank">go-ui-android</a></td>
+<td>Android apps that look like Android&rsquo;s own</td>
+</tr>
+
+<tr>
+<td><a href="https://github.com/akrck02/go-sound" target="_blank">go-sound</a></td>
+<td>sound and music</td>
+</tr>
+
+<tr>
+<td><a href="https://github.com/akrck02/go-scene-builder" target="_blank">go-scene-builder</a></td>
+<td>3D scenes from a flat map</td>
+</tr>
+
+<tr>
+<td><a href="https://github.com/akrck02/go-simulator" target="_blank">go-simulator</a></td>
+<td>simulations that change a scene</td>
+</tr>
+
+<tr>
+<td><a href="https://github.com/akrck02/go-simulator-terrain" target="_blank">go-simulator-terrain</a></td>
+<td>ground shaped by rivers</td>
+</tr>
+
+<tr>
+<td><a href="https://github.com/akrck02/go-simulator-climate" target="_blank">go-simulator-climate</a></td>
+<td>weather and biomes</td>
+</tr>
+
+<tr>
+<td><a href="https://github.com/akrck02/go-simulator-flora" target="_blank">go-simulator-flora</a></td>
+<td>forests that grow</td>
+</tr>
+
+<tr>
+<td><strong>go-simulator-urban</strong> (this one)</td>
+<td>towns that grow</td>
+</tr>
+
+<tr>
+<td><a href="https://github.com/akrck02/go-simulator-motion" target="_blank">go-simulator-motion</a></td>
+<td>a scene that moves</td>
+</tr>
+
+<tr>
+<td><a href="https://github.com/akrck02/go-3ds" target="_blank">go-3ds</a></td>
+<td>Go on the Nintendo 3DS</td>
+</tr>
+</tbody>
+</table>
+
+<blockquote>
+<p>⚠️ All of them are <strong>educational experiments</strong>, written with an AI assistant and pending review by their author: good for learning and playing, not for production.</p>
+</blockquote>
