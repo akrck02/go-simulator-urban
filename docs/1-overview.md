@@ -1,3 +1,5 @@
+<p align="center"><img alt="" src="images/logo.svg" width="120"></p>
+
 # Welcome to go-simulator-urban 👋
 
 **The urban plugin grows towns**, year after year: a village where roads meet becomes a town with streets of its own, squares, bridges and walls.
