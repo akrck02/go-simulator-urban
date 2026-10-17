@@ -77,7 +77,7 @@ cd ../go-simulator
 go run ./cmd/simulate -rules <rules.yaml> -output results/
 ```
 
-[More on getting started →](docs/getting-started.md)
+[More on getting started →](docs/3-getting-started.md)
 
 ## 🔍 How it works
 
@@ -87,17 +87,17 @@ go run ./cmd/simulate -rules <rules.yaml> -output results/
 
 go-simulator keeps the world and moves the clock, one year a step. The plugin keeps its cities, runs
 the year's rules in the order of the rules file and answers with the entities that changed; it never
-touches the renderer. [More on how it works →](docs/how-it-works.md)
+touches the renderer. [More on how it works →](docs/7-how-it-works.md)
 
 ## 📚 Documentation
 
 | | |
 |---|---|
-| [The urban quest](docs/quest.md) | Grow a market town on a river for a century in 5 levels. |
-| [Getting started](docs/getting-started.md) | The folders it needs, GEOS, a whole rules file, running it. |
-| [The model](docs/model.md) | How a town grows every year, with the published models behind each rule, and pictures. |
-| [The scenario](docs/scenario.md) | Every key of the city's scenario, with its default, and the input features. |
-| [Outputs](docs/outputs.md) | The entities, properties, events and indicators the city publishes. |
-| [Testing](docs/testing.md) | The six synthetic places, what is checked on every one, and profiling. |
-| [How it works](docs/how-it-works.md) | How the plugin fits go-simulator, and how the pictures were made. |
-| [Rules reference](docs/rules.md) | Every rule and parameter, generated from the plugin's own description. |
+| [The urban quest](docs/2-the-quest.md) | Grow a market town on a river for a century in 5 levels. |
+| [Getting started](docs/3-getting-started.md) | The folders it needs, GEOS, a whole rules file, running it. |
+| [The model](docs/5-the-model.md) | How a town grows every year, with the published models behind each rule, and pictures. |
+| [The scenario](docs/4-writing-a-scenario.md) | Every key of the city's scenario, with its default, and the input features. |
+| [Outputs](docs/6-what-it-writes.md) | The entities, properties, events and indicators the city publishes. |
+| [Testing](docs/9-testing.md) | The six synthetic places, what is checked on every one, and profiling. |
+| [How it works](docs/7-how-it-works.md) | How the plugin fits go-simulator, and how the pictures were made. |
+| [Rules reference](docs/8-rules-reference.md) | Every rule and parameter, generated from the plugin's own description. |

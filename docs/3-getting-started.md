@@ -79,7 +79,7 @@ three roads that meet near the river and an obstacle where nothing is built:
 
 `relief.npy` is a grid of heights in metres: a gentle plain, a little lower along the river, with a
 low hill to the north-west. Without a `relief`, the city reads the world's `elevation` field, so the
-terrain plugin can go first instead. Every key is in [the scenario](scenario.md).
+terrain plugin can go first instead. Every key is in [the scenario](4-writing-a-scenario.md).
 
 ## Running it
 
@@ -96,7 +96,7 @@ With go-simulator's viewer, over a glTF scene of the ground, which the town is d
 go run ./cmd/simulator -rules <rules.yaml> scene.glb
 ```
 
-go-simulator's [running guide](https://github.com/akrck02/go-simulator/blob/main/docs/running.md)
+go-simulator's [running guide](https://github.com/akrck02/go-simulator/blob/main/docs/4-guides/2-running.md)
 has the rest: snapshots, objectives and the viewer's keys.
 
 ## The tests
@@ -106,4 +106,4 @@ go vet ./...
 go test ./...
 ```
 
-[Testing](testing.md) has the six synthetic places the tests grow, and how to draw them.
+[Testing](9-testing.md) has the six synthetic places the tests grow, and how to draw them.
