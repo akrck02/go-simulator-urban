@@ -1,0 +1,141 @@
+<h1 id="outputs">📤 Outputs</h1>
+
+<h2 id="entities">Entities</h2>
+
+<p>The city appears as entities with ground shapes, one batch per kind, so thousands of houses stay
+cheap to draw. Heights are in world units, exaggerated by <code>height_scale</code>. Properties travel with
+them, so snapshots can be measured or drawn by other tools.</p>
+
+<p align="center">
+  <img alt="The river town at year 100 with its streets coloured by class: roads, quays, a ring road, alleys, streets the town opened and two main streets; bridges and squares are marked" src="images/streets.svg" width="880">
+</p>
+
+<table>
+<thead>
+<tr>
+<th>Kind</th>
+<th>Shape</th>
+<th>Properties</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>street</code></td>
+<td>line with a width</td>
+<td><code>class</code>: <code>road</code> (reaches the city from outside), <code>main</code> (most chosen, space syntax), <code>ring</code> (where an old wall stood), <code>street</code>, <code>alley</code>, <code>quay</code>; <code>from_node</code>, <code>to_node</code></td>
+</tr>
+
+<tr>
+<td><code>parcel</code></td>
+<td>flat outline</td>
+<td><code>use</code>, <code>coverage</code>, <code>floors</code>, <code>year</code>, <code>front</code>, <code>depth</code>, <code>street</code>, <code>square_metres</code></td>
+</tr>
+
+<tr>
+<td><code>building</code></td>
+<td>volume (floors × 3.2 m + 2 m)</td>
+<td><code>use</code>, <code>floors</code>, <code>parcel</code></td>
+</tr>
+
+<tr>
+<td><code>wall</code></td>
+<td>line with a height</td>
+<td><code>year</code>, <code>current</code>, <code>height_m</code></td>
+</tr>
+
+<tr>
+<td><code>gate</code></td>
+<td>a point (its transform), no shape</td>
+<td><code>year</code> (of its wall), <code>wall</code> (index of the wall); only the standing wall&rsquo;s gates, where roads and main streets cross it</td>
+</tr>
+
+<tr>
+<td><code>old_wall</code></td>
+<td>flat line</td>
+<td><code>year</code></td>
+</tr>
+
+<tr>
+<td><code>square</code></td>
+<td>flat outline</td>
+<td>—</td>
+</tr>
+
+<tr>
+<td><code>bridge</code></td>
+<td>line</td>
+<td>—</td>
+</tr>
+
+<tr>
+<td><code>river</code></td>
+<td>line with its width</td>
+<td><code>width</code></td>
+</tr>
+</tbody>
+</table>
+<p>Uses: <code>housing</code>, <code>shop</code>, <code>workshop</code>, <code>extensive</code> (gardens and convents in the belts where old
+walls stood) and <code>demolished</code> (taken by a new street, square or wall).</p>
+
+<h2 id="the-indicators-event">The indicators event</h2>
+
+<p>In the years the <code>indicators</code> rule lists, an <code>indicators</code> event with the measures to compare with
+historic town centres:</p>
+
+<p align="center">
+  <img alt="A chart of three indicators of the river town over 100 years: inhabitants from 600 to 36,000, settled hectares from 9 to 221, and the hectares towns of that size covered, close to the settled ones; the first wall at year 33 and a new one at year 49" src="images/growth-chart.svg" width="880">
+</p>
+
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Measure</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>year</code>, <code>inhabitants</code>, <code>parcels</code>, <code>street_pieces</code>, <code>walls</code></td>
+<td>counts</td>
+</tr>
+
+<tr>
+<td><code>settled_hectares</code></td>
+<td>ground of the parcels plus 40 % for streets and squares</td>
+</tr>
+
+<tr>
+<td><code>inhabitants_per_hectare</code></td>
+<td>density</td>
+</tr>
+
+<tr>
+<td><code>expected_hectares_cesaretti</code></td>
+<td>what a European city of this population covered around 1300 (Cesaretti et al. 2016)</td>
+</tr>
+
+<tr>
+<td><code>crossings_per_hectare</code>, <code>mean_street_piece_metres</code>, <code>edges_per_node</code>, <code>share_of_degree_three</code>, <code>share_of_dead_ends</code></td>
+<td>street network (Crucitti et al. 2006; Barthelemy and Flammini 2008)</td>
+</tr>
+
+<tr>
+<td><code>mean_block_metres</code></td>
+<td>blocks (Siksna 1997)</td>
+</tr>
+
+<tr>
+<td><code>mean_front_metres</code>, <code>mean_depth_metres</code></td>
+<td>plots (Conzen 1960)</td>
+</tr>
+
+<tr>
+<td><code>coverage_gsi</code>, <code>floor_area_ratio_far</code></td>
+<td>built coverage and floor area ratio</td>
+</tr>
+</tbody>
+</table>
+<p>Objectives in a rules file can read any of them, for example
+<code>{event: indicators, value: inhabitants, near: 6000, tolerance: 0.05}</code>.</p>

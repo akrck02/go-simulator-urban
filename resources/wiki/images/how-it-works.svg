@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 360" width="880" height="360" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <style>
+    .bg { fill: #ffffff; }
+    .box { fill: #f6f8fa; stroke: #d0d7de; }
+    .accent { fill: #ddf4ff; stroke: #54aeff; }
+    .title { fill: #1f2328; font-size: 15px; font-weight: 600; }
+    .text { fill: #59636e; font-size: 12.5px; }
+    .code { fill: #0969da; font-size: 12.5px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .label { fill: #59636e; font-size: 11.5px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .arrow { stroke: #8c959f; stroke-width: 1.6; fill: none; }
+    .head { fill: #8c959f; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0d1117; }
+      .box { fill: #161b22; stroke: #30363d; }
+      .accent { fill: #0c2d4b; stroke: #1f6feb; }
+      .title { fill: #e6edf3; }
+      .text { fill: #9198a1; }
+      .code { fill: #4493f8; }
+      .label { fill: #9198a1; }
+      .arrow { stroke: #6e7681; }
+      .head { fill: #6e7681; }
+    }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path class="head" d="M0,0 L10,5 L0,10 z"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="880" height="360" rx="12"/>
+
+  <!-- inputs -->
+  <rect class="box" x="24" y="30" width="190" height="300" rx="10" stroke-width="1.2"/>
+  <text class="title" x="119" y="58" text-anchor="middle">What you give</text>
+  <text class="code" x="44" y="92">rules.yaml</text>
+  <text class="text" x="44" y="111">the rules in order,</text>
+  <text class="text" x="44" y="128">one city rule per town</text>
+  <text class="code" x="44" y="162">scenario</text>
+  <text class="text" x="44" y="181">people over time, centres,</text>
+  <text class="text" x="44" y="198">floors, walls, river</text>
+  <text class="code" x="44" y="232">features.geojson</text>
+  <text class="text" x="44" y="251">window, roads, rivers,</text>
+  <text class="text" x="44" y="268">obstacles, rock</text>
+  <text class="code" x="44" y="302">relief</text>
+  <text class="text" x="44" y="321">or the world's elevation</text>
+
+  <!-- host -->
+  <path class="arrow" d="M214,180 H262" marker-end="url(#arrow)"/>
+  <rect class="box" x="266" y="90" width="180" height="180" rx="10" stroke-width="1.2"/>
+  <text class="title" x="356" y="122" text-anchor="middle">go-simulator</text>
+  <text class="text" x="356" y="146" text-anchor="middle">the host: keeps the world</text>
+  <text class="text" x="356" y="163" text-anchor="middle">and moves the clock,</text>
+  <text class="text" x="356" y="180" text-anchor="middle">one year per step</text>
+  <text class="text" x="356" y="214" text-anchor="middle">applies the changes,</text>
+  <text class="text" x="356" y="231" text-anchor="middle">checks objectives</text>
+
+  <!-- plugin -->
+  <path class="arrow" d="M446,150 H494" marker-end="url(#arrow)"/>
+  <path class="arrow" d="M494,212 H450" marker-end="url(#arrow)"/>
+  <text class="label" x="470" y="140" text-anchor="middle">a year</text>
+  <text class="label" x="470" y="230" text-anchor="middle">changes</text>
+  <rect class="accent" x="498" y="60" width="180" height="240" rx="10" stroke-width="1.4"/>
+  <text class="code" x="588" y="88" text-anchor="middle">urban</text>
+  <text class="title" x="588" y="110" text-anchor="middle">this plugin</text>
+  <text class="text" x="588" y="134" text-anchor="middle">a separate program,</text>
+  <text class="text" x="588" y="151" text-anchor="middle">over stdin and stdout</text>
+  <text class="label" x="588" y="174" text-anchor="middle">city · densify · expand</text>
+  <text class="label" x="588" y="191" text-anchor="middle">walls · squares</text>
+  <text class="label" x="588" y="208" text-anchor="middle">prune_empty_streets</text>
+  <text class="label" x="588" y="225" text-anchor="middle">split_large_blocks</text>
+  <text class="label" x="588" y="242" text-anchor="middle">space_syntax</text>
+  <text class="label" x="588" y="259" text-anchor="middle">indicators</text>
+  <text class="text" x="588" y="286" text-anchor="middle">never draws anything</text>
+
+  <!-- outputs -->
+  <path class="arrow" d="M678,120 C700,120 700,90 722,90" marker-end="url(#arrow)"/>
+  <path class="arrow" d="M678,240 C700,240 700,262 722,262" marker-end="url(#arrow)"/>
+  <rect class="box" x="726" y="30" width="130" height="140" rx="10" stroke-width="1.2"/>
+  <text class="title" x="742" y="58">Entities</text>
+  <text class="text" x="742" y="80">streets, plots,</text>
+  <text class="text" x="742" y="97">houses, walls,</text>
+  <text class="text" x="742" y="114">squares, bridges</text>
+  <text class="text" x="742" y="138">drawn in 3D by the</text>
+  <text class="text" x="742" y="155">viewer, or saved</text>
+
+  <rect class="box" x="726" y="200" width="130" height="130" rx="10" stroke-width="1.2"/>
+  <text class="title" x="742" y="228">Indicators</text>
+  <text class="text" x="742" y="250">an event with the</text>
+  <text class="text" x="742" y="267">town's measures,</text>
+  <text class="text" x="742" y="284">for objectives</text>
+  <text class="text" x="742" y="301">and comparisons</text>
+</svg>

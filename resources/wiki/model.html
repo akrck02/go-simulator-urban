@@ -1,0 +1,171 @@
+<h1 id="the-urban-growth-model">🏘️ The urban growth model</h1>
+
+<p>Old towns grew in a recognisable way. People arrived; first they built along the roads; the houses
+filled their plots, back and then up; when there was no room left, new streets opened; busy
+crossings became squares; and one day the town was big and rich enough to build a wall. The urban
+plugin follows that story year by year, with rules taken from studies of real historic towns.</p>
+
+<p><img src="./images/town_growth.jpg" alt="A town on the example island at years 10, 40, 70 and 100: houses along the roads first, then a denser core inside its walls" /></p>
+
+<p><img src="./images/town_chart.png" alt="Inhabitants and settled ground of the example town over 100 years, with the year of its first wall" /></p>
+
+<p><em>The example town: from 300 to 6,000 people in 100 years. It follows the roads and the river, and
+raises its first wall at year 60.</em></p>
+
+<p>Every rule comes from a published model; the only rule of its own is the walls&rsquo;, because no
+published model simulates them. It knows nothing about any particular city: the
+<a href="./scenario">scenario</a> says where, how many people and when.</p>
+
+<p>The other pictures in this page show a second made-up town, a river town that grows from 600 to
+36,000 people in 100 years; its whole rules file is in <a href="./getting-started">getting started</a>.</p>
+
+<h2 id="the-year">The year</h2>
+
+<p>Each year, the town asks itself one question: do the people fit? The <code>city</code> rule sets up a city at the start and opens every year. Its instance name names the city;
+the other rules find it by their <code>city</code> parameter, so several cities can grow in one simulation.
+Rules run in the order of the rules file, usually:</p>
+
+<p align="center">
+  <img alt="A year in nine steps, in the order of the rules file: 1 demand (city), 2 densify, 3 expand, 4 walls, 5 prune_empty_streets, 6 split_large_blocks, 7 space_syntax, 8 squares, 9 indicators; steps 5 to 8 run every few years; after every request the plugin publishes only the entities that changed" src="images/year.svg" width="880">
+</p>
+
+<ol>
+<li><strong>Demand.</strong> The population follows its curve (<code>logistic</code>: from <code>from</code> people in <code>from_year</code> to
+<code>to</code> in <code>to_year</code>, towards a <code>ceiling</code>). The floor space the people need is
+<code>inhabitants × square_metres_per_person</code>; the <strong>deficit</strong> is what is missing.</li>
+<li><strong>Densify</strong> (Conzen 1960; Caniggia and Maffei). Before the city spreads, its plots fill up:
+each year up to a quarter of the plots advance, the most wanted first. The house first takes the
+back of the plot (coverage up to 0.7, or the house depth the scenario gives) and then gains a
+floor, up to the year&rsquo;s maximum (new houses start with one floor, or two when the year allows
+three or more, and never more than the outskirts allow). <code>rare_floors</code> is a quota: at most its
+<code>share</code> of the plots may stand that high. Plots already that high keep their place in it and the
+most wanted of the rest fill what is left, so the share does not creep up as the town&rsquo;s most
+wanted places move. In a dense core, a full plot builds at the back, round a yard.</li>
+<li><strong>Expand</strong> (Weber et al. 2009). What is still missing goes to new plots along the most wanted
+free frontages: close to the growth centres, on gentle ground (no plot steeper than 0.4), inside
+the window, out of obstacles and water. A frontage less wanted than <code>open_streets_below</code> waits:
+a street nearby opens first. When no frontage is left, new streets grow from the network, along
+a tensor field (Chen et al. 2008) that follows the contours, the roads and the river; organic
+streets wander, continue from their ends and close into blocks.</li>
+<li><strong>Walls</strong> (the plugin&rsquo;s own rule). The first wall goes up when the population reaches
+<code>first_wall.population</code> or, at the latest, in <code>first_wall.year</code>. It follows the concave hull of
+what is built (or the given <code>wall_outline</code>), tied to the supporting rock when there is one, with
+gates where roads and main streets cross it (published as <code>gate</code> points) and a clear strip
+inside. When the suburbs outside
+hold more than <code>new_wall_when_outside</code> of the floor space and the wall is at least 12 years old,
+a new one goes up and the old one becomes a ring road with a belt of gardens and convents
+(Whitehand 1967). Its height can rise over the years (<code>wall_rise</code>) or follow the calendar
+(<code>wall_heights</code>).</li>
+<li><strong>Prune empty streets.</strong> Dead ends nobody built on for <code>grace_years</code> go away.</li>
+<li><strong>Split large blocks</strong> (Siksna 1997). An alley crosses blocks wider than <code>maximum_side</code>.</li>
+<li><strong>Space syntax</strong> (Hillier and Iida 2005). Angular segment analysis over the street network, on
+<code>samples</code> origins within <code>local_radius</code>: the most chosen streets become main streets, the most
+central square the market, and plots on them shops.</li>
+<li><strong>Squares.</strong> Irregular squares open at busy crossings, inside gates and at bridgeheads, one for
+every <code>per_inhabitants</code> people, at least <code>spacing</code> apart.</li>
+<li><strong>Indicators.</strong> In the listed years, an <code>indicators</code> event with the measures of the city&rsquo;s form.</li>
+</ol>
+
+<p>After every request the plugin publishes the city once (<code>AfterStep</code>): only the entities that
+changed since the last time travel to the host.</p>
+
+<h2 id="plots-fill-up-then-the-town-spreads">Plots fill up, then the town spreads</h2>
+
+<p align="center">
+  <img alt="Left: four narrow, deep plots side by side on a street, the front and the depth marked, each with a house of a different depth at the front. Right: one plot over the years: a house at the front, the house taking the back of the plot, the house gaining floors, and in a dense core a second building at the back round a yard" src="images/model.svg" width="880">
+</p>
+
+<p>A plot is a burgage: a narrow front on a street and a long depth behind it. Densify works on the
+plots that are already there (steps above); expand lays new ones along free frontages, and only
+opens streets when the frontages left are not wanted enough. With <code>open_streets_below: 0.3</code> a town
+stays a street village along its roads; with 0.5 to 0.7 it opens back streets sooner and grows
+compact. In the river town (0.5) the first decades are ribbons along the roads and the quays; the
+back streets come later, when the frontages near the centre run out.</p>
+
+<h2 id="walls-and-the-ring-road">Walls and the ring road</h2>
+
+<p align="center">
+  <img alt="The middle of the river town at four years: year 30, no wall yet; year 35, the first wall round what is built; year 50, a new wall further out, and the first one a ring road; year 100, the blocks inside filled, with a belt of gardens and convents along the ring" src="images/walls.svg" width="880">
+</p>
+
+<p>The river town reaches 4,000 people, its <code>first_wall.population</code>, in year 33, and the wall goes up
+round what is built. By year 49 too much of the floor space lies outside, so a new wall goes up
+and the old line becomes a ring road; new plots in a belt along it are large gardens and convents
+(use <code>extensive</code>), and the town fills the room between the two walls.</p>
+
+<h2 id="where-the-city-grows">Where the city grows</h2>
+
+<ul>
+<li><strong>Relief</strong>: the world&rsquo;s <code>elevation</code> field (put the terrain plugin first), or a relief file.
+Slopes steer streets along the contours and keep plots off steep ground. When the ground comes
+from the world and changes (the terrain&rsquo;s <code>erosion</code> rule moves it), the city takes it again at
+the start of the next year.</li>
+<li><strong>Growth centres</strong> pull the city; a centre can start pulling in a year and grow in weight over
+some years, so a city gains districts as it grows. The growth radius widens with the population
+(the settled area goes as N^0.714, its radius as N^0.357).</li>
+<li><strong>Grid zones</strong> lay planned streets on a lattice from a year on.</li>
+<li><strong>Density</strong> falls from the core to the outskirts: narrow fronts, deep houses and more floors in
+the core; wide plots with gardens and lower houses outside. Districts can set their own density.</li>
+</ul>
+
+<p align="center">
+  <img alt="The middle of the river town at year 100, every house shaded by its floors: four floors round the crossing of the roads and in a few blocks south of the river, fewer further out" src="images/floors.svg" width="880">
+</p>
+
+<h2 id="streets">Streets</h2>
+
+<p align="center">
+  <img alt="The river town at year 100 with its streets coloured by class: roads that reach the town, quays along both banks of the river, a ring road where the first wall stood, alleys across large blocks, streets the town opened, and two main streets; bridges and squares are marked" src="images/streets.svg" width="880">
+</p>
+
+<p>Every street piece has a class (see <a href="./outputs">outputs</a>). Roads come with the inputs;
+quays line the river; a ring follows a wall that was replaced; alleys split large blocks; the rest
+are streets the town opened. Space syntax turns the most chosen streets and alleys into main
+streets. In the river town, the three roads carry most of the movement, so only two pieces of the
+streets it opened become main streets.</p>
+
+<h2 id="rivers">Rivers</h2>
+
+<p>Rivers come as <code>river</code> features: a line along the axis with a <code>width</code> (km); their water is an
+obstacle. With the scenario&rsquo;s <code>river</code> settings they shape the town: streets align with the banks,
+quays line both banks once the town reaches them, plots by the water are wanted and some become
+workshops (mills, tanners), and bridges are spaced and square to the river. The river is published
+as a <code>river</code> entity and quays as streets of class <code>quay</code>.</p>
+
+<p align="center">
+  <img alt="A close look at the river in the middle of the river town at year 100: quays on both banks, bridges square to the river, grey workshops along the water among the houses, and shops along the roads" src="images/river.svg" width="880">
+</p>
+
+<p>With <code>river: {from_world: true}</code> the town also takes the rivers the world already has, such as the
+ones the terrain&rsquo;s <code>erosion</code> rule finds where the water gathers, so the town and the ground agree
+on where the water runs. They are taken once, when the city starts: a town does not move its
+quays and bridges after a river. Only the parts near the window count, and <code>narrowest</code> (km)
+leaves out the streams too narrow to shape a town.</p>
+
+<h2 id="clearing-the-drawn-scene">Clearing the drawn scene</h2>
+
+<p>When the drawn scene already has something where the city grows (an old town, a forest), a <code>clear</code>
+feature marks it: at the start the plugin sends a <code>clear_area</code> for the scenario&rsquo;s <code>clear_nodes</code>
+(holes in the feature are spared), and every year it clears the <code>tree_nodes</code> under the new plots.</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+<li>Barthelemy, M. and Flammini, A. (2008). Modeling urban street patterns.</li>
+<li>Caniggia, G. and Maffei, G. L. (1979). <em>Composizione architettonica e tipologia edilizia.</em></li>
+<li>Cesaretti, R. et al. (2016). Population-area relationship for medieval European cities.</li>
+<li>Chen, G. et al. (2008). Interactive procedural street modeling.</li>
+<li>Conzen, M. R. G. (1960). <em>Alnwick, Northumberland: a study in town-plan analysis.</em></li>
+<li>Crucitti, P., Latora, V. and Porta, S. (2006). Centrality measures in spatial networks of urban streets.</li>
+<li>Hillier, B. and Iida, S. (2005). Network and psychological effects in urban movement.</li>
+<li>Siksna, A. (1997). The effects of block size and form in North American and Australian city centres.</li>
+<li>Weber, B. et al. (2009). Interactive geometric simulation of 4D cities.</li>
+<li>Whitehand, J. W. R. (1967). Fringe belts: a neglected aspect of urban geography.</li>
+</ul>
+
+<h2 id="requirements">Requirements</h2>
+
+<p>GEOS, the geometry engine shapely uses: <code>sudo apt install libgeos-dev</code>, <code>sudo dnf install
+geos-devel</code> or <code>brew install geos</code>. While it is not installed, a <code>.geos-local/env.sh</code> (ignored by
+git) can point cgo at an unpacked copy: <code>. .geos-local/env.sh</code> before building. More in
+<a href="./getting-started">getting started</a>.</p>

@@ -1,0 +1,566 @@
+<h1 id="the-urban-quest">The urban quest</h1>
+
+<p>Grow a market town on a river for a hundred years, one level at a time. Each level teaches one
+piece of the urban plugin and ends with the town in 3D.</p>
+
+<p><img src="./images/quest/quest-map.svg" alt="The quest map: a road from START through 5 levels — Founder, Builder, Planner, Bridge master and Mason — to a final challenge, Mayor" /></p>
+
+<p>On a gentle plain crossed by a river and two old roads, a village of 300 people is founded where
+the roads meet. It grows along them, opens streets of its own, takes to its river with quays,
+bridges and squares, and builds a wall it later outgrows, until six thousand people live in it.</p>
+
+<hr>
+
+<p>Every level has the same shape: <strong>the idea</strong> (explained with something from everyday life), <strong>the
+rules</strong>, a <strong>checkpoint</strong> to know it works, and an optional <strong>bonus</strong>.</p>
+
+<hr>
+
+<h2 id="before-you-start">Before you start</h2>
+
+<p>You need Go 1.25 and GEOS (<code>sudo apt install libgeos-dev</code>, <code>brew install geos</code>): the plugin cuts
+plots and walls with it. Clone the projects side by side and make a folder for the quest:</p>
+<pre><code class="language-sh">git clone https://github.com/akrck02/go-renderer
+git clone https://github.com/akrck02/go-scene-builder
+git clone https://github.com/akrck02/go-simulator
+git clone https://github.com/akrck02/go-simulator-terrain
+git clone https://github.com/akrck02/go-simulator-urban
+mkdir town <span class="o">&amp;&amp;</span> <span class="nb">cd</span> town
+go mod init example.com/town
+</code></pre>
+
+<h3 id="the-plain">The plain</h3>
+
+<p><code>plain/main.go</code> writes the ground (4 × 4 km, a river valley, a hill to the north-west) in the
+relief format the terrain plugin reads:</p>
+<pre><code class="language-go"><span class="c1">// Command plain writes the ground a town grows on: a gentle plain, 4 × 4 km, lower along a river</span>
+<span class="c1">// that crosses it from west to east, with a low hill in the north-west. relieve.json says the</span>
+<span class="c1">// grid&#39;s size and place in kilometres; relieve.f32 holds a height in metres per cell.</span>
+<span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;encoding/binary&#34;</span>
+	<span class="s">&#34;encoding/json&#34;</span>
+	<span class="s">&#34;log&#34;</span>
+	<span class="s">&#34;math&#34;</span>
+	<span class="s">&#34;os&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">const</span> <span class="p">(</span>
+		<span class="nx">columns</span><span class="p">,</span> <span class="nx">rows</span> <span class="p">=</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">200</span> <span class="c1">// cells</span>
+		<span class="nx">cell</span>          <span class="p">=</span> <span class="mf">0.02</span>     <span class="c1">// kilometres a side: 20 m</span>
+		<span class="nx">west</span><span class="p">,</span> <span class="nx">north</span>   <span class="p">=</span> <span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span>
+	<span class="p">)</span>
+	<span class="nx">heights</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">float32</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">columns</span><span class="o">*</span><span class="nx">rows</span><span class="p">)</span>
+	<span class="k">for</span> <span class="nx">row</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">rows</span> <span class="p">{</span>
+		<span class="k">for</span> <span class="nx">column</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">columns</span> <span class="p">{</span>
+			<span class="nx">east</span> <span class="o">:=</span> <span class="nx">west</span> <span class="o">+</span> <span class="p">(</span><span class="nb">float64</span><span class="p">(</span><span class="nx">column</span><span class="p">)</span><span class="o">+</span><span class="mf">0.5</span><span class="p">)</span><span class="o">*</span><span class="nx">cell</span>
+			<span class="nx">northing</span> <span class="o">:=</span> <span class="nx">north</span> <span class="o">-</span> <span class="p">(</span><span class="nb">float64</span><span class="p">(</span><span class="nx">row</span><span class="p">)</span><span class="o">+</span><span class="mf">0.5</span><span class="p">)</span><span class="o">*</span><span class="nx">cell</span>
+			<span class="nx">heights</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">heights</span><span class="p">,</span> <span class="nb">float32</span><span class="p">(</span><span class="nf">height</span><span class="p">(</span><span class="nx">east</span><span class="p">,</span> <span class="nx">northing</span><span class="p">)))</span>
+		<span class="p">}</span>
+	<span class="p">}</span>
+	<span class="nx">header</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">json</span><span class="p">.</span><span class="nf">Marshal</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">any</span><span class="p">{</span><span class="s">&#34;columns&#34;</span><span class="p">:</span> <span class="nx">columns</span><span class="p">,</span> <span class="s">&#34;rows&#34;</span><span class="p">:</span> <span class="nx">rows</span><span class="p">,</span> <span class="s">&#34;cell&#34;</span><span class="p">:</span> <span class="nx">cell</span><span class="p">,</span> <span class="s">&#34;west&#34;</span><span class="p">:</span> <span class="nx">west</span><span class="p">,</span> <span class="s">&#34;north&#34;</span><span class="p">:</span> <span class="nx">north</span><span class="p">,</span> <span class="s">&#34;units&#34;</span><span class="p">:</span> <span class="s">&#34;km&#34;</span><span class="p">})</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">WriteFile</span><span class="p">(</span><span class="s">&#34;relieve.json&#34;</span><span class="p">,</span> <span class="nx">header</span><span class="p">,</span> <span class="mi">0</span><span class="nx">o644</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="nx">file</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="s">&#34;relieve.f32&#34;</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="k">defer</span> <span class="nx">file</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">binary</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="nx">file</span><span class="p">,</span> <span class="nx">binary</span><span class="p">.</span><span class="nx">LittleEndian</span><span class="p">,</span> <span class="nx">heights</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// height rises gently to the north, dips along the river and swells into a hill to the north-west.</span>
+<span class="kd">func</span> <span class="nf">height</span><span class="p">(</span><span class="nx">east</span><span class="p">,</span> <span class="nx">north</span> <span class="kt">float64</span><span class="p">)</span> <span class="kt">float64</span> <span class="p">{</span>
+	<span class="nx">river</span> <span class="o">:=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="nx">math</span><span class="p">.</span><span class="nf">Sin</span><span class="p">(</span><span class="nx">east</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="c1">// the river&#39;s line, a little winding</span>
+	<span class="nx">valley</span> <span class="o">:=</span> <span class="o">-</span><span class="mi">6</span> <span class="o">*</span> <span class="nx">math</span><span class="p">.</span><span class="nf">Exp</span><span class="p">(</span><span class="o">-</span><span class="nx">math</span><span class="p">.</span><span class="nf">Pow</span><span class="p">((</span><span class="nx">north</span><span class="o">-</span><span class="nx">river</span><span class="p">)</span><span class="o">/</span><span class="mf">0.25</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+	<span class="nx">hill</span> <span class="o">:=</span> <span class="mi">35</span> <span class="o">*</span> <span class="nx">math</span><span class="p">.</span><span class="nf">Exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="nx">math</span><span class="p">.</span><span class="nf">Pow</span><span class="p">(</span><span class="nx">east</span><span class="o">+</span><span class="mf">1.2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="nx">math</span><span class="p">.</span><span class="nf">Pow</span><span class="p">(</span><span class="nx">north</span><span class="o">-</span><span class="mf">1.2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span><span class="o">/</span><span class="mf">0.4</span><span class="p">)</span>
+	<span class="k">return</span> <span class="mi">40</span> <span class="o">+</span> <span class="mi">4</span><span class="o">*</span><span class="nx">north</span> <span class="o">+</span> <span class="nx">valley</span> <span class="o">+</span> <span class="nx">hill</span>
+<span class="p">}</span>
+</code></pre>
+<pre><code class="language-sh">go run ./plain
+</code></pre>
+
+<h3 id="looking-at-the-town">Looking at the town</h3>
+
+<p>A run without a window writes the town as GeoJSON: buildings with their height, parcels, streets,
+squares, walls, gates and the river. go-scene-builder turns that into a 3D scene with a <strong>style</strong>.
+<code>town.yaml</code>:</p>
+<pre><code class="language-yaml"><span class="nt">units</span><span class="p">:</span> <span class="l">m</span>
+<span class="nt">chunk</span><span class="p">:</span> <span class="m">0.5</span>
+<span class="nt">environment</span><span class="p">:</span> {<span class="nt">sun</span><span class="p">:</span> <span class="p">[</span><span class="m">220</span><span class="p">,</span> <span class="m">35</span><span class="p">]</span>}
+<span class="nt">terrain</span><span class="p">:</span> {<span class="nt">color</span><span class="p">:</span> <span class="s2">&#34;#8fa35a&#34;</span>}
+<span class="nt">relations</span><span class="p">:</span>
+  <span class="nt">facing</span><span class="p">:</span> {<span class="nt">when</span><span class="p">:</span> {<span class="nt">kind</span><span class="p">:</span> <span class="nt">street}, reach</span><span class="p">:</span> <span class="m">15</span>}
+<span class="nt">rules</span><span class="p">:</span>
+  - <span class="nt">when</span><span class="p">:</span> {<span class="nt">kind</span><span class="p">:</span> <span class="l">parcel}</span>
+    <span class="nt">shape</span><span class="p">:</span> {<span class="nt">role</span><span class="p">:</span> <span class="nt">ground, lift</span><span class="p">:</span> <span class="m">0.1</span>}
+    <span class="nt">color</span><span class="p">:</span> <span class="s2">&#34;#7f9a4e&#34;</span>
+  - <span class="nt">when</span><span class="p">:</span> {<span class="nt">kind</span><span class="p">:</span> <span class="l">street}</span>
+    <span class="nt">shape</span><span class="p">:</span> {<span class="nt">role</span><span class="p">:</span> <span class="nt">ground, width</span><span class="p">:</span> <span class="s2">&#34;width * 1000&#34;</span><span class="nt">, lift</span><span class="p">:</span> <span class="m">0.3</span>}
+    <span class="nt">color</span><span class="p">:</span> <span class="s2">&#34;#d8cdb4&#34;</span>
+  - <span class="nt">when</span><span class="p">:</span> {<span class="nt">kind</span><span class="p">:</span> <span class="l">square}</span>
+    <span class="nt">shape</span><span class="p">:</span> {<span class="nt">role</span><span class="p">:</span> <span class="nt">ground, lift</span><span class="p">:</span> <span class="m">0.35</span>}
+    <span class="nt">color</span><span class="p">:</span> <span class="s2">&#34;#c9bfa8&#34;</span>
+    <span class="nt">material</span><span class="p">:</span> {<span class="nt">pattern</span><span class="p">:</span> <span class="nt">cobbles, scale</span><span class="p">:</span> <span class="m">0.4</span>}
+  - <span class="nt">when</span><span class="p">:</span> {<span class="nt">kind</span><span class="p">:</span> <span class="l">river}</span>
+    <span class="nt">shape</span><span class="p">:</span> {<span class="nt">role</span><span class="p">:</span> <span class="nt">water, width</span><span class="p">:</span> <span class="s2">&#34;width * 1000&#34;</span>}
+  - <span class="nt">when</span><span class="p">:</span> {<span class="nt">kind</span><span class="p">:</span> <span class="l">bridge}</span>
+    <span class="nt">shape</span><span class="p">:</span> {<span class="nt">role</span><span class="p">:</span> <span class="nt">line, follow</span><span class="p">:</span> <span class="nt">level, thickness</span><span class="p">:</span> <span class="s2">&#34;width * 1000&#34;</span><span class="nt">, height</span><span class="p">:</span> <span class="m">0.5</span>}
+    <span class="nt">color</span><span class="p">:</span> <span class="s2">&#34;#9c9486&#34;</span>
+  - <span class="nt">when</span><span class="p">:</span> {<span class="nt">kind</span><span class="p">:</span> <span class="l">building}</span>
+    <span class="nt">shape</span><span class="p">:</span> {<span class="nt">role</span><span class="p">:</span> <span class="nt">volume, height</span><span class="p">:</span> <span class="s2">&#34;height * 1000&#34;</span>}
+    <span class="nt">walls</span><span class="p">:</span> {<span class="nt">color</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;#e9dfc9&#34;</span><span class="p">,</span> <span class="s2">&#34;#efe4cf&#34;</span><span class="p">,</span> <span class="s2">&#34;#e2d2b4&#34;</span><span class="p">,</span> <span class="s2">&#34;#f1ead9&#34;</span><span class="p">]</span>}
+    <span class="nt">roof</span><span class="p">:</span> {<span class="nt">recipe</span><span class="p">:</span> <span class="nt">gable, pitch</span><span class="p">:</span> <span class="nt">38, ridge</span><span class="p">:</span> <span class="nt">along_street, eaves</span><span class="p">:</span> <span class="nt">0.3, color</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;#a4553a&#34;</span><span class="p">,</span> <span class="s2">&#34;#9a4b33&#34;</span><span class="p">,</span> <span class="s2">&#34;#b0613f&#34;</span><span class="p">]</span>}
+    <span class="nt">facade</span><span class="p">:</span> {<span class="nt">door</span><span class="p">:</span> {<span class="nt">color</span><span class="p">:</span> <span class="s2">&#34;#5b3a26&#34;</span><span class="nt">}, windows</span><span class="p">:</span> {<span class="nt">shutters</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;#2f5d50&#34;</span><span class="p">,</span> <span class="s2">&#34;#7a3b2e&#34;</span><span class="p">]</span>}}
+  - <span class="nt">when</span><span class="p">:</span> {<span class="nt">kind</span><span class="p">:</span> <span class="l">wall}</span>
+    <span class="nt">shape</span><span class="p">:</span> {<span class="nt">role</span><span class="p">:</span> <span class="nt">line, height</span><span class="p">:</span> <span class="s2">&#34;height * 1000&#34;</span><span class="nt">, thickness</span><span class="p">:</span> <span class="m">2.5</span>}
+    <span class="nt">color</span><span class="p">:</span> <span class="s2">&#34;#a59c8c&#34;</span>
+    <span class="nt">material</span><span class="p">:</span> {<span class="nt">pattern</span><span class="p">:</span> <span class="nt">masonry, scale</span><span class="p">:</span> <span class="m">0.6</span>}
+    <span class="nt">battlements</span><span class="p">:</span> {<span class="nt">height</span><span class="p">:</span> <span class="nt">1, width</span><span class="p">:</span> <span class="nt">1, gap</span><span class="p">:</span> <span class="m">1</span>}
+    <span class="nt">openings</span><span class="p">:</span> {<span class="nt">where</span><span class="p">:</span> {<span class="nt">kind</span><span class="p">:</span> <span class="nt">street, class</span><span class="p">:</span> <span class="nt">road}, width</span><span class="p">:</span> <span class="m">8</span>}
+    <span class="nt">decorate</span><span class="p">:</span> <span class="p">[</span>{<span class="nt">recipe</span><span class="p">:</span> <span class="nt">gate_towers, size</span><span class="p">:</span> <span class="nt">6, height</span><span class="p">:</span> <span class="m">12</span>}<span class="p">]</span>
+  - <span class="nt">when</span><span class="p">:</span> {<span class="nt">kind</span><span class="p">:</span> <span class="l">old_wall}</span>
+    <span class="nt">shape</span><span class="p">:</span> {<span class="nt">role</span><span class="p">:</span> <span class="nt">line, height</span><span class="p">:</span> <span class="nt">4, thickness</span><span class="p">:</span> <span class="m">2</span>}
+    <span class="nt">color</span><span class="p">:</span> <span class="s2">&#34;#9a9182&#34;</span>
+</code></pre>
+
+<p>and <code>look/main.go</code> (from the <a href="https://github.com/akrck02/go-simulator-terrain/blob/main/docs/quest.md#looking-at-a-result" target="_blank">terrain quest</a>),
+which tells the builder the snapshot&rsquo;s map is in kilometres with z to the south:</p>
+<pre><code class="language-go"><span class="c1">// Command look turns a snapshot&#39;s entities into a map go-scene-builder reads: the snapshot writes</span>
+<span class="c1">// [x, z] in kilometres, with z to the south, and the builder needs to be told so.</span>
+<span class="c1">//</span>
+<span class="c1">//	go run ./look &#34;results/island 100.geojson&#34; map.geojson</span>
+<span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;encoding/json&#34;</span>
+	<span class="s">&#34;log&#34;</span>
+	<span class="s">&#34;os&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">content</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">ReadFile</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="kd">var</span> <span class="nx">collection</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">any</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">json</span><span class="p">.</span><span class="nf">Unmarshal</span><span class="p">(</span><span class="nx">content</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">collection</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+	<span class="p">}</span>
+	<span class="nx">properties</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">collection</span><span class="p">[</span><span class="s">&#34;properties&#34;</span><span class="p">].(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">any</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">properties</span> <span class="o">==</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">properties</span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">any</span><span class="p">{}</span>
+	<span class="p">}</span>
+	<span class="nx">properties</span><span class="p">[</span><span class="s">&#34;units&#34;</span><span class="p">],</span> <span class="nx">properties</span><span class="p">[</span><span class="s">&#34;axes&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="s">&#34;km&#34;</span><span class="p">,</span> <span class="s">&#34;east-south&#34;</span>
+	<span class="nx">collection</span><span class="p">[</span><span class="s">&#34;properties&#34;</span><span class="p">]</span> <span class="p">=</span> <span class="nx">properties</span>
+	<span class="nx">out</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">json</span><span class="p">.</span><span class="nf">Marshal</span><span class="p">(</span><span class="nx">collection</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">WriteFile</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="nx">out</span><span class="p">,</span> <span class="mi">0</span><span class="nx">o644</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Fatal</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+
+<p>After every run, for year 100:</p>
+<pre><code class="language-sh">go run ./look <span class="s2">&#34;results/town 100.geojson&#34;</span> map.geojson
+go run ../go-scene-builder/cmd/build-scene -map map.geojson -relief <span class="s2">&#34;results/town 100 elevation.json&#34;</span> -style town.yaml -out town.glb
+go run ../go-renderer/cmd/visor town.glb
+</code></pre>
+
+<p>The pictures were taken with <code>-zoom 0.25 -look-at 0,0</code> (and closer where it says).</p>
+
+<hr>
+
+<h2 id="level-1-the-founder">Level 1 · The Founder</h2>
+
+<table>
+<thead>
+<tr>
+<th>Mission</th>
+<th>Pieces</th>
+<th>Time</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>A village where two roads meet</td>
+<td><code>city</code>, the inputs, <code>nucleus</code>, <code>population</code>, <code>expand</code></td>
+<td>10 min</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="the-idea">The idea</h4>
+
+<p>A town needs <strong>somewhere to be and a reason to be there</strong>. The plugin reads the first from a map of
+inputs: the <strong>window</strong> it may grow in, the <strong>roads</strong> that already cross it, the <strong>river</strong>. The
+second is a <strong>population curve</strong>: how many people live there each year. Every year the town finds
+room for them, plot by plot, where they would most want to live: near the centre, on a street.</p>
+
+<p>The <code>city</code> rule sets the town up and holds it; the other rules find it by its <strong>instance name</strong>.</p>
+
+<h4 id="build-it">Build it</h4>
+
+<p><code>inputs.geojson</code>, in world kilometres <code>[x, z]</code>:</p>
+<pre><code class="language-json"><span class="p">{</span><span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;FeatureCollection&#34;</span><span class="p">,</span> <span class="nt">&#34;features&#34;</span><span class="p">:</span> <span class="p">[</span>
+ <span class="p">{</span><span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;Feature&#34;</span><span class="p">,</span> <span class="nt">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;window&#34;</span><span class="p">},</span> <span class="nt">&#34;geometry&#34;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;Polygon&#34;</span><span class="p">,</span> <span class="nt">&#34;coordinates&#34;</span><span class="p">:</span> <span class="p">[[[</span><span class="mf">-1.5</span><span class="p">,</span> <span class="mf">-1.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">-1.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">-1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">-1.5</span><span class="p">,</span> <span class="mf">-1.5</span><span class="p">]]]}},</span>
+ <span class="p">{</span><span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;Feature&#34;</span><span class="p">,</span> <span class="nt">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;river&#34;</span><span class="p">,</span> <span class="nt">&#34;width&#34;</span><span class="p">:</span> <span class="mf">0.03</span><span class="p">},</span> <span class="nt">&#34;geometry&#34;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;LineString&#34;</span><span class="p">,</span> <span class="nt">&#34;coordinates&#34;</span><span class="p">:</span> <span class="p">[[</span><span class="mi">-2</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">],</span> <span class="p">[</span><span class="mi">-1</span><span class="p">,</span> <span class="mf">-0.09</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.09</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mf">-0.07</span><span class="p">]]}},</span>
+ <span class="p">{</span><span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;Feature&#34;</span><span class="p">,</span> <span class="nt">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;road&#34;</span><span class="p">},</span> <span class="nt">&#34;geometry&#34;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;LineString&#34;</span><span class="p">,</span> <span class="nt">&#34;coordinates&#34;</span><span class="p">:</span> <span class="p">[[</span><span class="mi">-2</span><span class="p">,</span> <span class="mf">-0.4</span><span class="p">],</span> <span class="p">[</span><span class="mf">-0.6</span><span class="p">,</span> <span class="mf">-0.25</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">-0.15</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">-0.3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mf">-0.2</span><span class="p">]]}},</span>
+ <span class="p">{</span><span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;Feature&#34;</span><span class="p">,</span> <span class="nt">&#34;properties&#34;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&#34;role&#34;</span><span class="p">:</span> <span class="s2">&#34;road&#34;</span><span class="p">},</span> <span class="nt">&#34;geometry&#34;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;LineString&#34;</span><span class="p">,</span> <span class="nt">&#34;coordinates&#34;</span><span class="p">:</span> <span class="p">[[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">-2</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">-0.6</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">-0.15</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.3</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]}}</span>
+<span class="p">]}</span>
+</code></pre>
+
+<p><code>rules.yaml</code>: the terrain plugin puts the plain in the world, and the urban plugin grows on it:</p>
+<pre><code class="language-yaml"><span class="nt">plugins</span><span class="p">:</span>
+  - {<span class="nt">name</span><span class="p">:</span> <span class="nt">terrain, command</span><span class="p">:</span> <span class="nt">[go, run, .], directory</span><span class="p">:</span> <span class="l">../go-simulator-terrain}</span>
+  - {<span class="nt">name</span><span class="p">:</span> <span class="nt">urban, command</span><span class="p">:</span> <span class="nt">[go, run, .], directory</span><span class="p">:</span> <span class="l">../go-simulator-urban}</span>
+
+<span class="nt">stages</span><span class="p">:</span>
+  - <span class="nt">name</span><span class="p">:</span> <span class="l">town</span>
+    <span class="nt">clock</span><span class="p">:</span> {<span class="nt">unit</span><span class="p">:</span> <span class="nt">year, from</span><span class="p">:</span> <span class="nt">-1, to</span><span class="p">:</span> <span class="nt">10, step</span><span class="p">:</span> <span class="m">1</span>}
+    <span class="nt">snapshots</span><span class="p">:</span> <span class="p">[</span><span class="m">10</span><span class="p">]</span>
+    <span class="nt">rules</span><span class="p">:</span>
+      - <span class="nt">rule</span><span class="p">:</span> <span class="l">relief</span>
+        <span class="nt">with</span><span class="p">:</span> {<span class="nt">path</span><span class="p">:</span> <span class="nt">relieve.json, origin</span><span class="p">:</span> <span class="p">[</span><span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">]</span>}
+      - <span class="nt">rule</span><span class="p">:</span> <span class="l">city</span>
+        <span class="nt">name</span><span class="p">:</span> <span class="l">market_town</span>
+        <span class="nt">with</span><span class="p">:</span>
+          <span class="nt">features</span><span class="p">:</span> <span class="l">inputs.geojson</span>
+          <span class="nt">seed</span><span class="p">:</span> <span class="m">7</span>
+          <span class="nt">nucleus</span><span class="p">:</span> <span class="p">[</span><span class="m">0</span><span class="p">,</span> -<span class="m">0.15</span><span class="p">]</span>
+          <span class="nt">centres</span><span class="p">:</span> <span class="p">[</span>{<span class="nt">at</span><span class="p">:</span> <span class="nt">[0, -0.15], weight</span><span class="p">:</span> <span class="m">1</span>}<span class="p">]</span>
+          <span class="nt">population</span><span class="p">:</span> {<span class="nt">model</span><span class="p">:</span> <span class="nt">logistic, from_year</span><span class="p">:</span> <span class="nt">0, from</span><span class="p">:</span> <span class="nt">300, to_year</span><span class="p">:</span> <span class="nt">100, to</span><span class="p">:</span> <span class="nt">6000, ceiling</span><span class="p">:</span> <span class="m">7000</span>}
+          <span class="nt">max_floors</span><span class="p">:</span> <span class="p">[</span>{<span class="nt">before</span><span class="p">:</span> <span class="nt">50, floors</span><span class="p">:</span> <span class="m">2</span>}<span class="p">,</span> {<span class="nt">floors</span><span class="p">:</span> <span class="m">3</span>}<span class="p">]</span>
+      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">expand, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="l">market_town}}</span>
+      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">indicators, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="nt">market_town, years</span><span class="p">:</span> <span class="p">[</span><span class="m">10</span><span class="p">]</span>}}
+</code></pre>
+
+<p><code>logistic</code> growth starts slowly, speeds up and levels off under a <code>ceiling</code>.</p>
+<pre><code class="language-sh">go run ../go-simulator/cmd/simulate -rules rules.yaml -output results/
+</code></pre>
+
+<h4 id="checkpoint">Checkpoint</h4>
+
+<p>At year 10, a round little square where the roads meet, and houses along the roads near it, their
+doors on the street.</p>
+
+<p><img src="./images/quest/level-1.jpg" alt="Level 1: houses along four roads round a small square, the river to the south" /></p>
+
+<p><img src="./images/quest/achievement-founder.svg" alt="Achievement unlocked: Founder" /></p>
+
+<p>Learn more: <a href="./scenario">Writing a scenario</a> · <a href="./model">The model</a></p>
+
+<hr>
+
+<h2 id="level-2-the-builder">Level 2 · The Builder</h2>
+
+<table>
+<thead>
+<tr>
+<th>Mission</th>
+<th>Pieces</th>
+<th>Time</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>A century of growth</td>
+<td><code>densify</code>, the clock, indicators</td>
+<td>6 min</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="the-idea-1">The idea</h4>
+
+<p>A town grows two ways: <strong>outwards</strong>, new houses on new plots (<code>expand</code>), and <strong>inwards</strong>, houses
+rebuilt taller and closer as plots fill (<code>densify</code>), like a <strong>bookshelf</strong> that first gets new
+shelves, then books squeezed in. <code>max_floors</code> says how tall houses may be in each period.</p>
+
+<h4 id="build-it-1">Build it</h4>
+
+<p>Run the whole century, with both rules:</p>
+<pre><code class="language-yaml">    <span class="nt">clock</span><span class="p">:</span> {<span class="nt">unit</span><span class="p">:</span> <span class="nt">year, from</span><span class="p">:</span> <span class="nt">-1, to</span><span class="p">:</span> <span class="nt">100, step</span><span class="p">:</span> <span class="m">1</span>}
+    <span class="nt">snapshots</span><span class="p">:</span> <span class="p">[</span><span class="m">10</span><span class="p">,</span> <span class="m">50</span><span class="p">,</span> <span class="m">100</span><span class="p">]</span>
+    <span class="nt">rules</span><span class="p">:</span>
+      - <span class="l">… relief and city as before …</span>
+      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">densify, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="l">market_town}}</span>
+      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">expand, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="l">market_town}}</span>
+      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">indicators, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="nt">market_town, years</span><span class="p">:</span> <span class="p">[</span><span class="m">10</span><span class="p">,</span> <span class="m">50</span><span class="p">,</span> <span class="m">100</span><span class="p">]</span>}}
+</code></pre>
+
+<h4 id="checkpoint-1">Checkpoint</h4>
+
+<p>By year 50 the town has stretched along all four roads, a <strong>street village</strong>, one house deep. In
+<code>results/events.jsonl</code>, the <code>indicators</code> of year 100 count 6,000 inhabitants on about 42 hectares.</p>
+
+<p><img src="./images/quest/level-2.jpg" alt="Level 2: a long cross of houses along the four roads" /></p>
+
+<p><img src="./images/quest/achievement-builder.svg" alt="Achievement unlocked: Builder" /></p>
+
+<hr>
+
+<h2 id="level-3-the-planner">Level 3 · The Planner</h2>
+
+<table>
+<thead>
+<tr>
+<th>Mission</th>
+<th>Pieces</th>
+<th>Time</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Streets of its own, behind the frontages</td>
+<td><code>open_streets_below</code>, pruning, splitting</td>
+<td>6 min</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="the-idea-2">The idea</h4>
+
+<p>When the road frontages are taken, a town either keeps stretching along them, or <strong>opens new
+streets</strong> behind them, like a <strong>tree</strong> growing branches. <code>open_streets_below</code> says when: a town
+opens a street before building on frontages less wanted than this (0.3 makes street villages,
+0.5–0.7 compact towns). Streets that stay empty are pruned; blocks that grow too large are split.</p>
+
+<h4 id="build-it-2">Build it</h4>
+
+<p>In the city&rsquo;s <code>with</code>: <code>open_streets_below: 0.6</code>. And two rules that tidy the street network every
+five years:</p>
+<pre><code class="language-yaml">      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">prune_empty_streets, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="nt">market_town}, every</span><span class="p">:</span> <span class="m">5</span>}
+      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">split_large_blocks, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="nt">market_town}, every</span><span class="p">:</span> <span class="m">5</span>}
+</code></pre>
+
+<h4 id="checkpoint-2">Checkpoint</h4>
+
+<p>New lanes branch off the roads, with blocks of houses between them: a town, not a cross.</p>
+
+<p><img src="./images/quest/level-3.jpg" alt="Level 3: lanes branching off the roads, blocks of houses between them" /></p>
+
+<p><img src="./images/quest/achievement-planner.svg" alt="Achievement unlocked: Planner" /></p>
+
+<hr>
+
+<h2 id="level-4-the-bridge-master">Level 4 · The Bridge master</h2>
+
+<table>
+<thead>
+<tr>
+<th>Mission</th>
+<th>Pieces</th>
+<th>Time</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>A town that lives by its river, with squares</td>
+<td><code>river</code>, <code>squares</code>, <code>space_syntax</code></td>
+<td>8 min</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="the-idea-3">The idea</h4>
+
+<p>A river is a <strong>street of water</strong>: plots facing it are wanted, quays line it, bridges cross it where
+people need to. And where many paths cross, people stop: a <strong>square</strong> opens. To know where paths
+cross most, the town measures <strong>space syntax</strong>: how often each street lies on the shortest way
+between two places.</p>
+
+<h4 id="build-it-3">Build it</h4>
+
+<p>In the city&rsquo;s <code>with</code>:</p>
+<pre><code class="language-yaml">          <span class="nt">river</span><span class="p">:</span> {<span class="nt">reach</span><span class="p">:</span> <span class="m">0.25</span>}
+          <span class="nt">squares</span><span class="p">:</span> {<span class="nt">per_inhabitants</span><span class="p">:</span> <span class="m">1500</span>}
+</code></pre>
+
+<p>and two rules:</p>
+<pre><code class="language-yaml">      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">space_syntax, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="nt">market_town, samples</span><span class="p">:</span> <span class="nt">200}, every</span><span class="p">:</span> <span class="m">5</span>}
+      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">squares, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="nt">market_town}, every</span><span class="p">:</span> <span class="m">5</span>}
+</code></pre>
+
+<h4 id="checkpoint-3">Checkpoint</h4>
+
+<p>Close up (<code>-zoom 0.12 -look-at 0,0.05</code>): rows of houses along both banks where the road crosses, and
+a square by the water. The snapshot now counts two squares.</p>
+
+<p><img src="./images/quest/level-4.jpg" alt="Level 4: houses along both banks of the river, a square by the water" /></p>
+
+<p><img src="./images/quest/achievement-bridge-master.svg" alt="Achievement unlocked: Bridge master" /></p>
+
+<hr>
+
+<h2 id="level-5-the-mason">Level 5 · The Mason</h2>
+
+<table>
+<thead>
+<tr>
+<th>Mission</th>
+<th>Pieces</th>
+<th>Time</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>A wall, gates, and a wall outgrown</td>
+<td><code>first_wall</code>, the <code>walls</code> rule</td>
+<td>6 min</td>
+</tr>
+</tbody>
+</table>
+
+<h4 id="the-idea-4">The idea</h4>
+
+<p>A town walls itself when it has <strong>something to protect</strong>: here, once 2,500 people live in it. The
+wall goes round the built town, with <strong>gates</strong> where roads leave. When the town spills past it, a
+new, wider wall is built, and the old one stays as <code>old_wall</code>, like <strong>rings in a tree trunk</strong>.</p>
+
+<h4 id="build-it-4">Build it</h4>
+
+<p>In the city&rsquo;s <code>with</code>: <code>first_wall: {population: 2500}</code>, and the rule, before the tidying ones:</p>
+<pre><code class="language-yaml">      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">walls, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="l">market_town}}</span>
+</code></pre>
+
+<p>The style already draws <code>wall</code> with battlements and towers at the gates, and <code>old_wall</code> lower.</p>
+
+<h4 id="checkpoint-4">Checkpoint</h4>
+
+<p>A wide wall round the town with towers where the roads go through, and the line of the first,
+smaller wall inside it. The snapshot counts <code>wall</code>, <code>old_wall</code> and four <code>gate</code>s.</p>
+
+<p><img src="./images/quest/level-5.jpg" alt="Level 5: a town inside a wide wall, the old wall&rsquo;s line inside" /></p>
+
+<p><img src="./images/quest/achievement-mason.svg" alt="Achievement unlocked: Mason" /></p>
+
+<hr>
+
+<h2 id="final-challenge-mayor">Final challenge · Mayor</h2>
+
+<p>Give the town a <strong>second centre</strong> north of the river, which starts to draw people in year 40 and
+takes thirty years to grow; and <strong>check</strong> the century: about six thousand people at the end
+(±10 %), and a wall.</p>
+
+<blockquote>
+<p><strong>Hint:</strong> <code>centres</code> takes several, each with a <code>weight</code>, <code>grows_from</code> and <code>grows_for</code>.
+Objectives go in the stage. Careful with commas in names: in <code>{…}</code>, a comma ends the value.</p>
+</blockquote>
+
+<p>Try it on your own first, then compare with the solution.</p>
+
+<p><img src="./images/quest/final.jpg" alt="The final challenge: the walled town with a second quarter north of the river" /></p>
+
+<details>
+<summary>🔓 Show the solution</summary>
+
+<pre><code>          centres: [{at: [0, -0.15], weight: 1}, {at: [0.1, 0.6], weight: 0.6, grows_from: 40, grows_for: 30}]</code></pre>
+
+<pre><code>    objectives:
+      - {name: about six thousand people, at: 100, event: indicators, value: inhabitants, near: 6000, tolerance: 0.1}
+      - {name: walled, at: 100, count: {kind: wall}}</code></pre>
+
+The run ends with `objectives: 2 of 2 reached`.
+
+</details>
+
+<p><img src="./images/quest/achievement-final.svg" alt="Rare achievement unlocked: Mayor" /></p>
+
+<hr>
+
+<h2 id="well-done">Well done</h2>
+
+<p><img src="./images/quest/achievements-all.svg" alt="All six achievements: Founder, Builder, Planner, Bridge master, Mason and Mayor" /></p>
+
+<p>You founded a town, let it grow for a century by rules of where people want to live, and checked
+it came out as planned.</p>
+
+<h3 id="ideas-to-keep-going">Ideas to keep going</h3>
+
+<table>
+<thead>
+<tr>
+<th>Idea</th>
+<th>Difficulty</th>
+<th>Hint</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Taller in the core</td>
+<td>⭐</td>
+<td><code>density</code> and <code>rare_floors</code> (<a href="./scenario">scenario</a>)</td>
+</tr>
+
+<tr>
+<td>Curvier streets</td>
+<td>⭐</td>
+<td><code>organic: {wander_degrees: 20}</code></td>
+</tr>
+
+<tr>
+<td>Watch it grow live</td>
+<td>⭐⭐</td>
+<td><code>go-simulator/cmd/simulator</code> with a <code>scene_style</code> (go-simulator&rsquo;s <a href="https://github.com/akrck02/go-simulator/blob/main/docs/rules-files.md#scene_style" target="_blank">rules files</a>)</td>
+</tr>
+
+<tr>
+<td>The town on an island of your own</td>
+<td>⭐⭐⭐</td>
+<td>The <a href="https://github.com/akrck02/go-simulator-terrain/blob/main/docs/quest.md" target="_blank">terrain</a> and <a href="https://github.com/akrck02/go-simulator-flora/blob/main/docs/quest.md" target="_blank">flora</a> quests, with <code>tree_nodes</code> to clear the forest</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+
+<table>
+<thead>
+<tr>
+<th>You see</th>
+<th>Why, and what to do</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>city: at least one growth centre is needed</code></td>
+<td>Add <code>centres: [{at: [x, z], weight: 1}]</code></td>
+</tr>
+
+<tr>
+<td><code>pkg-config: geos not found</code></td>
+<td>Install GEOS: <code>libgeos-dev</code> or <code>geos</code></td>
+</tr>
+
+<tr>
+<td>An objective&rsquo;s name is cut short</td>
+<td>A comma inside <code>{…}</code> ends the value: write the number in words, or quote the name</td>
+</tr>
+
+<tr>
+<td>The town does not grow</td>
+<td>The population curve starts after the clock, or the window is all obstacles</td>
+</tr>
+
+<tr>
+<td>The town is mirrored in the viewer</td>
+<td>The map was not run through <code>look</code></td>
+</tr>
+</tbody>
+</table>
+
+<hr>
+
+<p><a href="./readme">← All the documentation</a></p>

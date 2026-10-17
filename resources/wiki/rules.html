@@ -1,0 +1,520 @@
+<h1 id="rules-of-the-urban-plugin">📋 Rules of the urban plugin</h1>
+
+<p>Version 0.1.0, protocol 2. Pre-industrial urban growth, year by year, on real relief (Weber et al. 2009; Conzen 1960; Hillier and Iida 2005).</p>
+
+<p>This reference is generated from what the plugin itself tells the host (the <code>describe</code> message), so it always
+matches the code. Parameters go under <code>with:</code> in a rules file; see go-simulator&rsquo;s
+<a href="https://github.com/akrck02/go-simulator/blob/main/docs/rules-files.md" target="_blank">rules file reference</a>.</p>
+
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>What it does</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><a href="#city"><code>city</code></a></td>
+<td>Sets up a city from its scenario (relief, inputs, population curve, centres, grid, floors, walls) and starts each year. Its instance name names the city.</td>
+</tr>
+
+<tr>
+<td><a href="#densify"><code>densify</code></a></td>
+<td>Fills existing plots before the city spreads (burgage cycle).</td>
+</tr>
+
+<tr>
+<td><a href="#expand"><code>expand</code></a></td>
+<td>Lays plots along free frontages and opens new streets when none are left.</td>
+</tr>
+
+<tr>
+<td><a href="#walls"><code>walls</code></a></td>
+<td>Raises the first wall and new ones when the suburbs grow too big.</td>
+</tr>
+
+<tr>
+<td><a href="#prune_empty_streets"><code>prune_empty_streets</code></a></td>
+<td>Removes dead ends nobody built on after some years.</td>
+</tr>
+
+<tr>
+<td><a href="#split_large_blocks"><code>split_large_blocks</code></a></td>
+<td>Cuts an alley across blocks wider than a size (Siksna 1997).</td>
+</tr>
+
+<tr>
+<td><a href="#space_syntax"><code>space_syntax</code></a></td>
+<td>Angular segment analysis: main streets, the market square and shops.</td>
+</tr>
+
+<tr>
+<td><a href="#indicators"><code>indicators</code></a></td>
+<td>Emits an &ldquo;indicators&rdquo; event with the city&rsquo;s form measures in the listed years (every step when none).</td>
+</tr>
+
+<tr>
+<td><a href="#squares"><code>squares</code></a></td>
+<td>Opens irregular squares at busy crossings, inside gates and at bridgeheads (scenario &ldquo;squares&rdquo;).</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="city"><code>city</code></h2>
+
+<p>Sets up a city from its scenario (relief, inputs, population curve, centres, grid, floors, walls) and starts each year. Its instance name names the city.</p>
+
+<ul>
+<li><strong>Reads:</strong> entities of kind <code>river</code>; fields <code>elevation</code></li>
+<li><strong>Writes:</strong> <code>street</code>, <code>parcel</code>, <code>building</code>, <code>wall</code>, <code>old_wall</code>, <code>gate</code>, <code>square</code>, <code>bridge</code>, <code>river</code></li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>relief</code></td>
+<td>map</td>
+<td></td>
+<td>{path, minimum_x, minimum_z, cell_size}: heights in metres (.npy), rows from the minimum z; without it, the world&rsquo;s elevation field</td>
+</tr>
+
+<tr>
+<td><code>features</code></td>
+<td>text</td>
+<td></td>
+<td>GeoJSON with role: window, road, rivers, obstacles, wall_support, clear</td>
+</tr>
+
+<tr>
+<td><code>population</code></td>
+<td>map</td>
+<td></td>
+<td>{model: logistic, from_year, from, to_year, to, ceiling}</td>
+</tr>
+
+<tr>
+<td><code>centres</code></td>
+<td>list</td>
+<td></td>
+<td>[{at: [x, z], weight, grows_from, grows_for}]</td>
+</tr>
+
+<tr>
+<td><code>grid</code></td>
+<td>list</td>
+<td></td>
+<td>[{from_year, angle_degrees, area}]</td>
+</tr>
+
+<tr>
+<td><code>max_floors</code></td>
+<td>list</td>
+<td></td>
+<td>[{before, floors}, …, {floors}]</td>
+</tr>
+
+<tr>
+<td><code>first_wall</code></td>
+<td>map</td>
+<td></td>
+<td>{year, population}</td>
+</tr>
+
+<tr>
+<td><code>wall_rise</code></td>
+<td>map</td>
+<td></td>
+<td>{from, height, years}: the wall grows in height over the years (metres)</td>
+</tr>
+
+<tr>
+<td><code>wall_heights</code></td>
+<td>list</td>
+<td></td>
+<td>[[year, metres], …]: the standing wall&rsquo;s height by calendar year; wins over wall_rise</td>
+</tr>
+
+<tr>
+<td><code>nucleus</code></td>
+<td>vector</td>
+<td></td>
+<td>[x, z] of the first village&rsquo;s square</td>
+</tr>
+
+<tr>
+<td><code>new_wall_when_outside</code></td>
+<td>number</td>
+<td><code>0.3</code></td>
+<td></td>
+</tr>
+
+<tr>
+<td><code>square_metres_per_person</code></td>
+<td>number</td>
+<td><code>30</code></td>
+<td></td>
+</tr>
+
+<tr>
+<td><code>seed</code></td>
+<td>number</td>
+<td><code>1</code></td>
+<td></td>
+</tr>
+
+<tr>
+<td><code>height_scale</code></td>
+<td>number</td>
+<td><code>1</code></td>
+<td></td>
+</tr>
+
+<tr>
+<td><code>open_streets_below</code></td>
+<td>number</td>
+<td></td>
+<td>a town opens new streets before building on frontages less wanted than this (0.3: street villages; 0.5–0.7: compact towns)</td>
+</tr>
+
+<tr>
+<td><code>rare_floors</code></td>
+<td>map</td>
+<td></td>
+<td>{floors, share}: only the most wanted share of plots may reach these floors</td>
+</tr>
+
+<tr>
+<td><code>building_depth</code></td>
+<td>list</td>
+<td></td>
+<td>[from, to]: houses as deep as from…to times their front (without it, coverage grows 0.4 → 0.7)</td>
+</tr>
+
+<tr>
+<td><code>organic</code></td>
+<td>map</td>
+<td></td>
+<td>{segment, wander_degrees, field_snapping, continuation, closing, infill}: curvier organic streets</td>
+</tr>
+
+<tr>
+<td><code>density</code></td>
+<td>map</td>
+<td></td>
+<td>{core_front_perches, outer_front_perches, core_depth, outer_depth, core_house_depth, outer_house_depth, outer_floors, radius_factor, back_buildings_from, districts}: density from the core to the outskirts</td>
+</tr>
+
+<tr>
+<td><code>squares</code></td>
+<td>map</td>
+<td></td>
+<td>{per_inhabitants, spacing, size, at_gates, at_bridges}: irregular squares at busy crossings, gates and bridgeheads</td>
+</tr>
+
+<tr>
+<td><code>river</code></td>
+<td>map</td>
+<td></td>
+<td>{reach, alignment, frontage_bonus, quays, longest_bridge, bridge_chance, bridge_spacing, workshops_by_water, from_world, narrowest}: how rivers shape the town</td>
+</tr>
+
+<tr>
+<td><code>colours</code></td>
+<td>map</td>
+<td></td>
+<td>sRGB &ldquo;#rrggbb&rdquo; by kind, use or &ldquo;garden&rdquo;, for viewing without a scene style; the rest is grey</td>
+</tr>
+
+<tr>
+<td><code>clear_nodes</code></td>
+<td>list</td>
+<td></td>
+<td>scene nodes cleared under the &ldquo;clear&rdquo; features when the city starts</td>
+</tr>
+
+<tr>
+<td><code>tree_nodes</code></td>
+<td>list</td>
+<td></td>
+<td>scene nodes of trees, cleared there too and under every new plot</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="densify"><code>densify</code></h2>
+
+<p>Fills existing plots before the city spreads (burgage cycle).</p>
+
+<ul>
+<li><strong>Reads:</strong> nothing from other plugins</li>
+<li><strong>Writes:</strong> <code>street</code>, <code>parcel</code>, <code>building</code>, <code>wall</code>, <code>old_wall</code>, <code>gate</code>, <code>square</code>, <code>bridge</code>, <code>river</code></li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>city</code></td>
+<td>text</td>
+<td></td>
+<td>instance name of the city rule</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="expand"><code>expand</code></h2>
+
+<p>Lays plots along free frontages and opens new streets when none are left.</p>
+
+<ul>
+<li><strong>Reads:</strong> nothing from other plugins</li>
+<li><strong>Writes:</strong> <code>street</code>, <code>parcel</code>, <code>building</code>, <code>wall</code>, <code>old_wall</code>, <code>gate</code>, <code>square</code>, <code>bridge</code>, <code>river</code></li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>city</code></td>
+<td>text</td>
+<td></td>
+<td>instance name of the city rule</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="walls"><code>walls</code></h2>
+
+<p>Raises the first wall and new ones when the suburbs grow too big.</p>
+
+<ul>
+<li><strong>Reads:</strong> nothing from other plugins</li>
+<li><strong>Writes:</strong> <code>street</code>, <code>parcel</code>, <code>building</code>, <code>wall</code>, <code>old_wall</code>, <code>gate</code>, <code>square</code>, <code>bridge</code>, <code>river</code></li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>city</code></td>
+<td>text</td>
+<td></td>
+<td>instance name of the city rule</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="prune-empty-streets"><code>prune_empty_streets</code></h2>
+
+<p>Removes dead ends nobody built on after some years.</p>
+
+<ul>
+<li><strong>Reads:</strong> nothing from other plugins</li>
+<li><strong>Writes:</strong> <code>street</code>, <code>parcel</code>, <code>building</code>, <code>wall</code>, <code>old_wall</code>, <code>gate</code>, <code>square</code>, <code>bridge</code>, <code>river</code></li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>city</code></td>
+<td>text</td>
+<td></td>
+<td>instance name of the city rule</td>
+</tr>
+
+<tr>
+<td><code>grace_years</code></td>
+<td>number</td>
+<td><code>8</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="split-large-blocks"><code>split_large_blocks</code></h2>
+
+<p>Cuts an alley across blocks wider than a size (Siksna 1997).</p>
+
+<ul>
+<li><strong>Reads:</strong> nothing from other plugins</li>
+<li><strong>Writes:</strong> <code>street</code>, <code>parcel</code>, <code>building</code>, <code>wall</code>, <code>old_wall</code>, <code>gate</code>, <code>square</code>, <code>bridge</code>, <code>river</code></li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>city</code></td>
+<td>text</td>
+<td></td>
+<td>instance name of the city rule</td>
+</tr>
+
+<tr>
+<td><code>maximum_side</code></td>
+<td>number</td>
+<td><code>0.12</code></td>
+<td>world units</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="space-syntax"><code>space_syntax</code></h2>
+
+<p>Angular segment analysis: main streets, the market square and shops.</p>
+
+<ul>
+<li><strong>Reads:</strong> nothing from other plugins</li>
+<li><strong>Writes:</strong> <code>street</code>, <code>parcel</code>, <code>building</code>, <code>wall</code>, <code>old_wall</code>, <code>gate</code>, <code>square</code>, <code>bridge</code>, <code>river</code></li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>city</code></td>
+<td>text</td>
+<td></td>
+<td>instance name of the city rule</td>
+</tr>
+
+<tr>
+<td><code>samples</code></td>
+<td>number</td>
+<td><code>250</code></td>
+<td></td>
+</tr>
+
+<tr>
+<td><code>local_radius</code></td>
+<td>number</td>
+<td><code>0.8</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="indicators"><code>indicators</code></h2>
+
+<p>Emits an &ldquo;indicators&rdquo; event with the city&rsquo;s form measures in the listed years (every step when none).</p>
+
+<ul>
+<li><strong>Reads:</strong> nothing from other plugins</li>
+<li><strong>Writes:</strong> nothing (it only emits events)</li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>city</code></td>
+<td>text</td>
+<td></td>
+<td>instance name of the city rule</td>
+</tr>
+
+<tr>
+<td><code>years</code></td>
+<td>list</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="squares"><code>squares</code></h2>
+
+<p>Opens irregular squares at busy crossings, inside gates and at bridgeheads (scenario &ldquo;squares&rdquo;).</p>
+
+<ul>
+<li><strong>Reads:</strong> nothing from other plugins</li>
+<li><strong>Writes:</strong> <code>street</code>, <code>parcel</code>, <code>building</code>, <code>wall</code>, <code>old_wall</code>, <code>gate</code>, <code>square</code>, <code>bridge</code>, <code>river</code></li>
+</ul>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>city</code></td>
+<td>text</td>
+<td></td>
+<td>instance name of the city rule</td>
+</tr>
+</tbody>
+</table>

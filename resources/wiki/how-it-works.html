@@ -1,0 +1,54 @@
+<h1 id="how-it-works">🔍 How it works</h1>
+
+<h2 id="how-the-plugin-fits-go-simulator">How the plugin fits go-simulator</h2>
+
+<p align="center">
+  <img alt="A rules file, the scenario, the GeoJSON features and the relief go into go-simulator, the host; every year it sends the urban plugin a step over standard input and output, and the plugin answers with changes: entities (streets, plots, houses, walls, squares, bridges) and an indicators event" src="images/how-it-works.svg" width="880">
+</p>
+
+<p>go-simulator is the host. It reads the rules file, keeps the world (its entities, fields and
+events) and moves the clock. The urban plugin is a separate program the host starts; they talk over
+standard input and output (go-simulator&rsquo;s <a href="https://github.com/akrck02/go-simulator/blob/main/docs/protocol.md" target="_blank">protocol</a>).
+<code>main.go</code> only serves the plugin; everything else is in the <code>urban</code> package.</p>
+
+<ul>
+<li>At the start the plugin <strong>describes</strong> itself: its nine rules, their parameters, what each one
+reads and what it writes. That description is also where the <a href="./rules">rules reference</a> comes from.</li>
+<li>The <code>city</code> rule reads the world&rsquo;s <code>elevation</code> field when the scenario gives no relief file. The
+other rules read nothing from other plugins: they work on the city the <code>city</code> rule set up.</li>
+<li>The rules write the city&rsquo;s entities (<code>street</code>, <code>parcel</code>, <code>building</code>, <code>wall</code>, <code>old_wall</code>,
+<code>square</code>, <code>bridge</code>, <code>river</code>) and the <code>indicators</code> event; see <a href="./outputs">outputs</a>.</li>
+</ul>
+
+<p>A plugin never touches the renderer: it reads its copy of the world and answers with changes
+(go-simulator&rsquo;s <a href="https://github.com/akrck02/go-simulator/blob/main/docs/writing-plugins.md" target="_blank">writing plugins</a>).
+Shapes are in world units on the ground plane (x, z, in kilometres) and fields in physical units, as
+go-simulator&rsquo;s <a href="https://github.com/akrck02/go-simulator/blob/main/docs/vocabulary.md" target="_blank">vocabulary</a> lists.</p>
+
+<h2 id="what-travels-each-year">What travels each year</h2>
+
+<p>The town&rsquo;s rules belong on a stepped clock in years. Every step the host gives each rule of the
+stage the year, in the order of the rules file; a rule with <code>every: N</code> runs only when N years
+have passed since its last run. The rules change the city the plugin keeps in memory, and after the
+host&rsquo;s request the plugin publishes the city once: only the entities that changed since the last
+time travel back (a new plot, a house with one more floor, a street that became a main street, a
+new wall). Thousands of plots stay cheap that way, and each kind travels as one batch to draw.</p>
+
+<p>The same scenario and <code>seed</code> grow the same town: a test grows a place twice and compares the two
+(<a href="./testing">testing</a>).</p>
+
+<h2 id="how-the-pictures-were-made">How the pictures were made</h2>
+
+<p>The pictures of the river town (the town at the top of the README, the four years, the chart, the
+walls, the streets, the floors and the river) were drawn from the plugin&rsquo;s own answers. A small
+throwaway program, kept outside the repository, ran the real plugin inside a go-simulator host with
+the rules file in <a href="./getting-started">getting started</a>, stepped it year by
+year to year 100, kept every year&rsquo;s <code>indicators</code> event and, every five years, the city&rsquo;s entities,
+and drew them from above.</p>
+
+<p>They are SVG drawings with their own light and dark colours, not screenshots of the viewer: the
+look of a town in 3D comes from the scene and its style, not from this plugin. The six test places
+in <a href="./testing">testing</a> were drawn with the repository&rsquo;s own <code>tools/view_snapshot.py</code>, from what
+the places test saves with <code>URBAN_PLACES_OUTPUT</code>. The diagrams (how it fits, a year, a plot over
+the years) were drawn by hand in the same style. The two pictures of the example island at the top
+of <a href="./model">the model</a> were in the repository before these pages, and show a different made-up town.</p>

@@ -1,0 +1,347 @@
+<h1 id="the-city-s-scenario">🗺️ The city&rsquo;s scenario</h1>
+
+<p>The scenario is the <code>with:</code> of the <code>city</code> rule, or files it includes
+(<code>with: {include: [derived.yaml, town.yaml]}</code>). Coordinates are world coordinates on the ground
+plane (x, z) in kilometres; relative paths start at the rules file&rsquo;s folder. Keys the plugin does
+not know are ignored, so a scenario can carry notes for people.</p>
+<pre><code class="language-yaml">- <span class="nt">rule</span><span class="p">:</span> <span class="l">city</span>
+  <span class="nt">name</span><span class="p">:</span> <span class="l">my_town</span>
+  <span class="nt">with</span><span class="p">:</span>
+    <span class="nt">features</span><span class="p">:</span> <span class="l">inputs.geojson</span>
+    <span class="nt">nucleus</span><span class="p">:</span> <span class="p">[</span><span class="m">0</span><span class="p">,</span> <span class="m">0</span><span class="p">]</span>
+    <span class="nt">population</span><span class="p">:</span> {<span class="nt">model</span><span class="p">:</span> <span class="nt">logistic, from_year</span><span class="p">:</span> <span class="nt">0, from</span><span class="p">:</span> <span class="nt">300, to_year</span><span class="p">:</span> <span class="nt">100, to</span><span class="p">:</span> <span class="nt">6000, ceiling</span><span class="p">:</span> <span class="m">8000</span>}
+    <span class="nt">centres</span><span class="p">:</span> <span class="p">[</span>{<span class="nt">at</span><span class="p">:</span> <span class="nt">[0, 0], weight</span><span class="p">:</span> <span class="m">1</span>}<span class="p">,</span> {<span class="nt">at</span><span class="p">:</span> <span class="nt">[0.3, 0.8], weight</span><span class="p">:</span> <span class="nt">0.9, grows_from</span><span class="p">:</span> <span class="nt">30, grows_for</span><span class="p">:</span> <span class="m">40</span>}<span class="p">]</span>
+    <span class="nt">grid</span><span class="p">:</span> <span class="p">[</span>{<span class="nt">from_year</span><span class="p">:</span> <span class="nt">40, angle_degrees</span><span class="p">:</span> <span class="nt">20, area</span><span class="p">:</span> <span class="nt">[[x, z], …], block</span><span class="p">:</span> <span class="m">0.08</span>}<span class="p">]</span>
+    <span class="nt">open_streets_below</span><span class="p">:</span> <span class="m">0.3</span>
+    <span class="nt">max_floors</span><span class="p">:</span> <span class="p">[</span>{<span class="nt">before</span><span class="p">:</span> <span class="nt">40, floors</span><span class="p">:</span> <span class="m">2</span>}<span class="p">,</span> {<span class="nt">before</span><span class="p">:</span> <span class="nt">80, floors</span><span class="p">:</span> <span class="m">3</span>}<span class="p">,</span> {<span class="nt">floors</span><span class="p">:</span> <span class="m">4</span>}<span class="p">]</span>
+    <span class="nt">rare_floors</span><span class="p">:</span> {<span class="nt">floors</span><span class="p">:</span> <span class="nt">3, share</span><span class="p">:</span> <span class="m">0.05</span>}
+    <span class="nt">building_depth</span><span class="p">:</span> <span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="m">1.5</span><span class="p">]</span>
+    <span class="nt">first_wall</span><span class="p">:</span> {<span class="nt">year</span><span class="p">:</span> <span class="nt">60, population</span><span class="p">:</span> <span class="m">3000</span>}
+    <span class="nt">wall_heights</span><span class="p">:</span> <span class="p">[[</span><span class="m">60</span><span class="p">,</span> <span class="m">4</span><span class="p">],</span> <span class="p">[</span><span class="m">70</span><span class="p">,</span> <span class="m">4</span><span class="p">],</span> <span class="p">[</span><span class="m">100</span><span class="p">,</span> <span class="m">25</span><span class="p">]]</span>
+    <span class="nt">new_wall_when_outside</span><span class="p">:</span> <span class="m">0.3</span>
+    <span class="nt">square_metres_per_person</span><span class="p">:</span> <span class="m">30</span>
+    <span class="nt">seed</span><span class="p">:</span> <span class="m">7</span>
+    <span class="nt">height_scale</span><span class="p">:</span> <span class="m">1</span>
+</code></pre>
+
+<h2 id="keys">Keys</h2>
+
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>relief</code></td>
+<td>the world&rsquo;s <code>elevation</code></td>
+<td><code>{path, minimum_x, minimum_z, cell_size}</code>: a <code>.npy</code> of heights in metres, rows from the smallest z, placed by its first cell centre</td>
+</tr>
+
+<tr>
+<td><code>features</code></td>
+<td>—</td>
+<td>GeoJSON inputs (see below)</td>
+</tr>
+
+<tr>
+<td><code>nucleus</code></td>
+<td>—</td>
+<td><code>[x, z]</code> of the first village&rsquo;s square</td>
+</tr>
+
+<tr>
+<td><code>population</code></td>
+<td>required</td>
+<td><code>{model: logistic, from_year, from, to_year, to, ceiling}</code>; the ceiling must be above <code>to</code></td>
+</tr>
+
+<tr>
+<td><code>centres</code></td>
+<td>required</td>
+<td><code>[{at: [x, z], weight, grows_from, grows_for}]</code>: points that pull the city; a centre can start in a year and grow over some years</td>
+</tr>
+
+<tr>
+<td><code>grid</code></td>
+<td>none</td>
+<td><code>[{from_year, angle_degrees, area, block}]</code>: zones laid out on a lattice of <code>block</code> km (0.08)</td>
+</tr>
+
+<tr>
+<td><code>open_streets_below</code></td>
+<td>0.3</td>
+<td>0.3: street villages along the roads; 0.5–0.7: compact towns with back streets</td>
+</tr>
+
+<tr>
+<td><code>max_floors</code></td>
+<td><code>[{floors: 3}]</code></td>
+<td><code>[{before: year, floors}, …, {floors}]</code>: the most floors in each period</td>
+</tr>
+
+<tr>
+<td><code>rare_floors</code></td>
+<td>none</td>
+<td><code>{floors, share}</code>: at most this share of the plots may reach these floors, the most wanted ones; plots that already stand that high keep their place</td>
+</tr>
+
+<tr>
+<td><code>building_depth</code></td>
+<td>coverage 0.4 → 0.7</td>
+<td><code>[from, to]</code>: houses as deep as from…to times their front</td>
+</tr>
+
+<tr>
+<td><code>first_wall</code></td>
+<td>population 3000</td>
+<td><code>{year, population}</code>: the first wall goes up at the population or, at the latest, in the year</td>
+</tr>
+
+<tr>
+<td><code>wall_rise</code></td>
+<td>11 m from the start</td>
+<td><code>{from, height, years}</code>: metres the year it goes up, then evenly up to <code>height</code></td>
+</tr>
+
+<tr>
+<td><code>wall_heights</code></td>
+<td>none</td>
+<td><code>[[year, metres], …]</code>: the standing wall&rsquo;s height by calendar year; wins over <code>wall_rise</code></td>
+</tr>
+
+<tr>
+<td><code>new_wall_when_outside</code></td>
+<td>0.3</td>
+<td>share of the floor space outside the wall that raises a new one</td>
+</tr>
+
+<tr>
+<td><code>square_metres_per_person</code></td>
+<td>30</td>
+<td>floor space a person needs</td>
+</tr>
+
+<tr>
+<td><code>seed</code></td>
+<td>1</td>
+<td>the same seed grows the same city</td>
+</tr>
+
+<tr>
+<td><code>height_scale</code></td>
+<td>1</td>
+<td>how much buildings are exaggerated in 3D</td>
+</tr>
+
+<tr>
+<td><code>clear_nodes</code></td>
+<td>none</td>
+<td>scene nodes cleared under the <code>clear</code> features at the start</td>
+</tr>
+
+<tr>
+<td><code>tree_nodes</code></td>
+<td>none</td>
+<td>scene nodes of trees, cleared there too and under every new plot</td>
+</tr>
+
+<tr>
+<td><code>colours</code></td>
+<td>grey</td>
+<td>sRGB <code>&quot;#rrggbb&quot;</code> by kind, use or <code>&quot;garden&quot;</code>, for viewing without a scene style</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="organic"><code>organic</code></h3>
+
+<p>Curvier organic streets.</p>
+
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>segment</code></td>
+<td>0.055</td>
+<td>mean length of a street piece (km)</td>
+</tr>
+
+<tr>
+<td><code>wander_degrees</code></td>
+<td>12</td>
+<td>spread of the turn at every piece</td>
+</tr>
+
+<tr>
+<td><code>field_snapping</code></td>
+<td>1</td>
+<td>chance a street bends to the tensor field when close to it</td>
+</tr>
+
+<tr>
+<td><code>continuation</code></td>
+<td>1</td>
+<td>how much more likely a street goes on from its end than branches</td>
+</tr>
+
+<tr>
+<td><code>closing</code></td>
+<td>1.5</td>
+<td>how far ahead (× the piece) a street looks to close a block</td>
+</tr>
+
+<tr>
+<td><code>infill</code></td>
+<td>0</td>
+<td>extra want of frontages among built plots, so streets fill before new ones open</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="density"><code>density</code></h3>
+
+<p>From the core to the outskirts.</p>
+
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>core_front_perches</code>, <code>outer_front_perches</code></td>
+<td>[1, 1.5], [3, 5]</td>
+<td>plot fronts, in perches (5.03 m)</td>
+</tr>
+
+<tr>
+<td><code>core_depth</code>, <code>outer_depth</code></td>
+<td>[0.025, 0.04], [0.035, 0.05]</td>
+<td>plot depths (km)</td>
+</tr>
+
+<tr>
+<td><code>core_house_depth</code>, <code>outer_house_depth</code></td>
+<td>2, 1</td>
+<td>deepest house, × the front</td>
+</tr>
+
+<tr>
+<td><code>outer_floors</code></td>
+<td>1</td>
+<td>most floors in the outskirts</td>
+</tr>
+
+<tr>
+<td><code>radius_factor</code></td>
+<td>0.6</td>
+<td>the core&rsquo;s radius, × the growth radius</td>
+</tr>
+
+<tr>
+<td><code>back_buildings_from</code></td>
+<td>0 (never)</td>
+<td>density from which full plots build at the back, round a yard</td>
+</tr>
+
+<tr>
+<td><code>districts</code></td>
+<td>none</td>
+<td><code>[{name, area, density}]</code>: areas with their own density</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="squares"><code>squares</code></h3>
+
+<p>Irregular squares at busy crossings, gates and bridgeheads: <code>per_inhabitants</code> (2500), <code>spacing</code> (0.2 km), <code>size</code> ([0.012, 0.03] km of reach
+from the crossing), <code>at_gates</code> (true: a square just inside every gate of the standing wall),
+<code>at_bridges</code> (true: a square at both ends of every bridge).</p>
+
+<h3 id="river"><code>river</code></h3>
+
+<p>How rivers shape the town: <code>reach</code> (0.25 km), <code>alignment</code> (1, weight of the banks in street directions),
+<code>frontage_bonus</code> (1), <code>quays</code> (true), <code>longest_bridge</code> (1.6 × the river&rsquo;s width), <code>bridge_chance</code>
+(0.6), <code>bridge_spacing</code> (0.15 km), <code>workshops_by_water</code> (0.3), <code>from_world</code> (false: also take the
+world&rsquo;s <code>river</code> entities, as the terrain&rsquo;s <code>erosion</code> rule publishes them), <code>narrowest</code> (0 km: world
+rivers narrower than this are left out).</p>
+
+<h2 id="input-features">Input features</h2>
+
+<p><code>features</code> is a GeoJSON collection; every feature has a <code>role</code>:</p>
+
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Geometry</th>
+<th>Meaning</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>window</code></td>
+<td>polygon</td>
+<td>where the city may grow (required)</td>
+</tr>
+
+<tr>
+<td><code>road</code></td>
+<td>line</td>
+<td>roads that already exist; the city grows along them</td>
+</tr>
+
+<tr>
+<td><code>river</code></td>
+<td>line, with <code>width</code> (km)</td>
+<td>a river that crosses the town (see the model)</td>
+</tr>
+
+<tr>
+<td><code>rivers</code></td>
+<td>polygon</td>
+<td>other water, an obstacle</td>
+</tr>
+
+<tr>
+<td><code>obstacles</code></td>
+<td>polygon</td>
+<td>where nothing is built</td>
+</tr>
+
+<tr>
+<td><code>wall_support</code></td>
+<td>polygon</td>
+<td>rock the wall ties to instead of crossing it</td>
+</tr>
+
+<tr>
+<td><code>wall_outline</code></td>
+<td>polygon</td>
+<td>the shape of the wall, when it is given; then it is the only wall</td>
+</tr>
+
+<tr>
+<td><code>clear</code></td>
+<td>polygon</td>
+<td>where the drawn scene is cleared at the start</td>
+</tr>
+</tbody>
+</table>

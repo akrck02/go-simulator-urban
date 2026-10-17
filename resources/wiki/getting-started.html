@@ -1,0 +1,128 @@
+<h1 id="getting-started">🚀 Getting started</h1>
+
+<h2 id="the-folders-it-needs">The folders it needs</h2>
+
+<p>The plugin is developed next to the projects it uses: <code>go.mod</code> replaces go-simulator and
+go-renderer with the folders beside this one. Clone them side by side:</p>
+<pre><code>go-renderer/
+go-simulator/
+go-simulator-urban/   ← this repository
+</code></pre>
+
+<h2 id="geos">GEOS</h2>
+
+<p>The plugin cuts plots, walls and squares with GEOS, the geometry engine shapely uses. Install it
+before building:</p>
+<pre><code class="language-bash">brew install geos                <span class="c1"># macOS</span>
+sudo apt install libgeos-dev     <span class="c1"># Debian, Ubuntu</span>
+sudo dnf install geos-devel      <span class="c1"># Fedora</span>
+</code></pre>
+
+<p><code>pkg-config geos</code> should then print its version. While it is not installed, a <code>.geos-local/env.sh</code>
+(ignored by git) can point cgo at an unpacked copy: <code>. .geos-local/env.sh</code> before building.</p>
+
+<h2 id="a-whole-rules-file">A whole rules file</h2>
+
+<p>The <code>city</code> rule sets up a city and opens every year; its instance name names the city, and the
+other rules find it by their <code>city</code> parameter, so several cities can grow in one simulation. This is
+the made-up river town drawn in these pages:</p>
+<pre><code class="language-yaml"><span class="nt">plugins</span><span class="p">:</span>
+  - <span class="nt">name</span><span class="p">:</span> <span class="l">urban</span>
+    <span class="nt">command</span><span class="p">:</span> <span class="p">[</span><span class="l">go, run, .]</span>
+    <span class="nt">directory</span><span class="p">:</span> <span class="l">../go-simulator-urban      </span> <span class="c"># where the plugin runs</span>
+
+<span class="nt">stages</span><span class="p">:</span>
+  - <span class="nt">name</span><span class="p">:</span> <span class="l">city</span>
+    <span class="nt">clock</span><span class="p">:</span> {<span class="nt">unit</span><span class="p">:</span> <span class="nt">year, from</span><span class="p">:</span> <span class="nt">-1, to</span><span class="p">:</span> <span class="nt">100, step</span><span class="p">:</span> <span class="m">1</span>}
+    <span class="nt">rules</span><span class="p">:</span>
+      - <span class="nt">rule</span><span class="p">:</span> <span class="l">city</span>
+        <span class="nt">name</span><span class="p">:</span> <span class="l">river_town</span>
+        <span class="nt">with</span><span class="p">:</span>
+          <span class="nt">relief</span><span class="p">:</span> {<span class="nt">path</span><span class="p">:</span> <span class="nt">relief.npy, minimum_x</span><span class="p">:</span> <span class="nt">-1.6, minimum_z</span><span class="p">:</span> <span class="nt">-1.6, cell_size</span><span class="p">:</span> <span class="m">0.0125</span>}
+          <span class="nt">features</span><span class="p">:</span> <span class="l">inputs.geojson</span>
+          <span class="nt">seed</span><span class="p">:</span> <span class="m">7</span>
+          <span class="nt">nucleus</span><span class="p">:</span> <span class="p">[</span><span class="m">0</span><span class="p">,</span> -<span class="m">0.12</span><span class="p">]</span>
+          <span class="nt">population</span><span class="p">:</span> {<span class="nt">model</span><span class="p">:</span> <span class="nt">logistic, from_year</span><span class="p">:</span> <span class="nt">0, from</span><span class="p">:</span> <span class="nt">600, to_year</span><span class="p">:</span> <span class="nt">100, to</span><span class="p">:</span> <span class="nt">36000, ceiling</span><span class="p">:</span> <span class="m">42000</span>}
+          <span class="nt">open_streets_below</span><span class="p">:</span> <span class="m">0.5</span>
+          <span class="nt">centres</span><span class="p">:</span> <span class="p">[</span>{<span class="nt">at</span><span class="p">:</span> <span class="nt">[0, -0.12], weight</span><span class="p">:</span> <span class="m">1</span>}<span class="p">,</span> {<span class="nt">at</span><span class="p">:</span> <span class="nt">[0.15, 0.35], weight</span><span class="p">:</span> <span class="nt">0.6, grows_from</span><span class="p">:</span> <span class="nt">30, grows_for</span><span class="p">:</span> <span class="m">30</span>}<span class="p">]</span>
+          <span class="nt">max_floors</span><span class="p">:</span> <span class="p">[</span>{<span class="nt">before</span><span class="p">:</span> <span class="nt">40, floors</span><span class="p">:</span> <span class="m">2</span>}<span class="p">,</span> {<span class="nt">before</span><span class="p">:</span> <span class="nt">80, floors</span><span class="p">:</span> <span class="m">3</span>}<span class="p">,</span> {<span class="nt">floors</span><span class="p">:</span> <span class="m">4</span>}<span class="p">]</span>
+          <span class="nt">first_wall</span><span class="p">:</span> {<span class="nt">population</span><span class="p">:</span> <span class="m">4000</span>}
+          <span class="nt">river</span><span class="p">:</span> {<span class="nt">reach</span><span class="p">:</span> <span class="m">0.25</span>}
+          <span class="nt">squares</span><span class="p">:</span> {<span class="nt">per_inhabitants</span><span class="p">:</span> <span class="m">2500</span>}
+      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">densify, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="l">river_town}}</span>
+      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">expand, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="l">river_town}}</span>
+      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">walls, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="l">river_town}}</span>
+      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">prune_empty_streets, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="nt">river_town}, every</span><span class="p">:</span> <span class="m">5</span>}
+      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">split_large_blocks, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="nt">river_town}, every</span><span class="p">:</span> <span class="m">5</span>}
+      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">space_syntax, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="nt">river_town, samples</span><span class="p">:</span> <span class="nt">200}, every</span><span class="p">:</span> <span class="m">5</span>}
+      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">squares, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="nt">river_town}, every</span><span class="p">:</span> <span class="m">5</span>}
+      - {<span class="nt">rule</span><span class="p">:</span> <span class="nt">indicators, with</span><span class="p">:</span> {<span class="nt">city</span><span class="p">:</span> <span class="l">river_town}}</span>
+</code></pre>
+
+<p><code>inputs.geojson</code> holds the window the town may grow in (a 3 × 3 km square), a river 35 m wide,
+three roads that meet near the river and an obstacle where nothing is built:</p>
+
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Geometry</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td><code>window</code></td>
+<td>the square from <code>[-1.5, -1.5]</code> to <code>[1.5, 1.5]</code></td>
+</tr>
+
+<tr>
+<td><code>river</code> (<code>width: 0.035</code>)</td>
+<td>from <code>[-1.6, 0.25]</code> through <code>[-0.6, 0.12]</code>, <code>[-0.1, 0.05]</code>, <code>[0.4, 0.12]</code>, <code>[1, 0]</code> to <code>[1.6, 0.05]</code></td>
+</tr>
+
+<tr>
+<td><code>road</code></td>
+<td>from <code>[-1.6, -0.35]</code> through <code>[-0.6, -0.2]</code>, <code>[0, -0.12]</code>, <code>[0.7, -0.25]</code> to <code>[1.6, -0.15]</code></td>
+</tr>
+
+<tr>
+<td><code>road</code></td>
+<td>from <code>[0.1, -1.6]</code> through <code>[0.05, -0.6]</code>, <code>[0, -0.12]</code>, <code>[0.05, 0.4]</code> to <code>[0.25, 1.6]</code></td>
+</tr>
+
+<tr>
+<td><code>road</code></td>
+<td>from <code>[0, -0.12]</code> through <code>[-0.5, 0.6]</code> to <code>[-1.2, 1.6]</code></td>
+</tr>
+
+<tr>
+<td><code>obstacles</code></td>
+<td>the quadrilateral <code>[0.8, 0.6]</code>, <code>[1.3, 0.55]</code>, <code>[1.4, 1]</code>, <code>[0.9, 1.1]</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>relief.npy</code> is a grid of heights in metres: a gentle plain, a little lower along the river, with a
+low hill to the north-west. Without a <code>relief</code>, the city reads the world&rsquo;s <code>elevation</code> field, so the
+terrain plugin can go first instead. Every key is in <a href="./scenario">the scenario</a>.</p>
+
+<h2 id="running-it">Running it</h2>
+
+<p>Without a window, to the end of the clock, saving what the stages ask for:</p>
+<pre><code class="language-bash"><span class="nb">cd</span> ../go-simulator
+go run ./cmd/simulate -rules &lt;rules.yaml&gt; -output results/
+</code></pre>
+
+<p>With go-simulator&rsquo;s viewer, over a glTF scene of the ground, which the town is drawn on as it grows:</p>
+<pre><code class="language-bash">go run ./cmd/simulator -rules &lt;rules.yaml&gt; scene.glb
+</code></pre>
+
+<p>go-simulator&rsquo;s <a href="https://github.com/akrck02/go-simulator/blob/main/docs/running.md" target="_blank">running guide</a>
+has the rest: snapshots, objectives and the viewer&rsquo;s keys.</p>
+
+<h2 id="the-tests">The tests</h2>
+<pre><code class="language-bash">go vet ./...
+go <span class="nb">test</span> ./...
+</code></pre>
+
+<p><a href="./testing">Testing</a> has the six synthetic places the tests grow, and how to draw them.</p>
