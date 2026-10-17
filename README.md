@@ -1,5 +1,7 @@
 <div align="center">
 
+<img alt="" src="docs/images/logo.svg" width="120">
+
 # Go urban simulator
 
 **Pre-industrial towns that grow year by year, as a plugin for [go-simulator](https://github.com/akrck02/go-simulator).**
