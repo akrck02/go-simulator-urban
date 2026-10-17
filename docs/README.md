@@ -2,6 +2,7 @@
 
 | | Page | What is in it |
 |---|---|---|
+| 🏴‍☠️ | [The urban quest](quest.md) | Grow a market town on a river for a century in 5 levels: a village, growth, streets, the river and squares, walls. |
 | 🚀 | [Getting started](getting-started.md) | The folders it needs, GEOS, a whole rules file for a made-up river town, and running it with or without a window. |
 | 🏘️ | [The model](model.md) | How a city grows every year: demand, densification, frontages and streets, walls, squares, space syntax, rivers, with the published models behind each rule and pictures of each. |
 | 🗺️ | [The scenario](scenario.md) | Every key of the city's scenario, with its default, and the input features. |

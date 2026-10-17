@@ -93,6 +93,7 @@ touches the renderer. [More on how it works →](docs/how-it-works.md)
 
 | | |
 |---|---|
+| [The urban quest](docs/quest.md) | Grow a market town on a river for a century in 5 levels. |
 | [Getting started](docs/getting-started.md) | The folders it needs, GEOS, a whole rules file, running it. |
 | [The model](docs/model.md) | How a town grows every year, with the published models behind each rule, and pictures. |
 | [The scenario](docs/scenario.md) | Every key of the city's scenario, with its default, and the input features. |
