@@ -2,8 +2,8 @@
 
 ## The folders it needs
 
-The plugin is developed next to the projects it uses: `go.mod` replaces go-simulator and
-go-renderer with the folders beside this one. Clone them side by side:
+The plugin is developed next to the projects it uses: `go.mod` replaces Go Simulator and
+Go Renderer with the folders beside this one. Clone them side by side:
 
 ```
 go-renderer/
@@ -90,13 +90,13 @@ cd ../go-simulator
 go run ./cmd/simulate -rules <rules.yaml> -output results/
 ```
 
-With go-simulator's viewer, over a glTF scene of the ground, which the town is drawn on as it grows:
+With Go Simulator's viewer, over a glTF scene of the ground, which the town is drawn on as it grows:
 
 ```bash
 go run ./cmd/simulator -rules <rules.yaml> scene.glb
 ```
 
-go-simulator's [running guide](https://github.com/akrck02/go-simulator/blob/main/docs/4-guides/2-running.md)
+Go Simulator's [running guide](https://github.com/akrck02/go-simulator/blob/main/docs/4-guides/2-running.md)
 has the rest: snapshots, objectives and the viewer's keys.
 
 ## The tests

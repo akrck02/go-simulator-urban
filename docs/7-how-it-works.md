@@ -1,14 +1,14 @@
 # 🔍 How it works
 
-## How the plugin fits go-simulator
+## How the plugin fits Go Simulator
 
 <p align="center">
-  <img alt="A rules file, the scenario, the GeoJSON features and the relief go into go-simulator, the host; every year it sends the urban plugin a step over standard input and output, and the plugin answers with changes: entities (streets, plots, houses, walls, squares, bridges) and an indicators event" src="images/how-it-works.svg" width="880">
+  <img alt="A rules file, the scenario, the GeoJSON features and the relief go into Go Simulator, the host; every year it sends the urban plugin a step over standard input and output, and the plugin answers with changes: entities (streets, plots, houses, walls, squares, bridges) and an indicators event" src="images/how-it-works.svg" width="880">
 </p>
 
-go-simulator is the host. It reads the rules file, keeps the world (its entities, fields and
+Go Simulator is the host. It reads the rules file, keeps the world (its entities, fields and
 events) and moves the clock. The urban plugin is a separate program the host starts; they talk over
-standard input and output (go-simulator's [protocol](https://github.com/akrck02/go-simulator/blob/main/docs/5-reference/2-protocol.md)).
+standard input and output (Go Simulator's [protocol](https://github.com/akrck02/go-simulator/blob/main/docs/5-reference/2-protocol.md)).
 `main.go` only serves the plugin; everything else is in the `urban` package.
 
 - At the start the plugin **describes** itself: its nine rules, their parameters, what each one
@@ -19,9 +19,9 @@ standard input and output (go-simulator's [protocol](https://github.com/akrck02/
   `square`, `bridge`, `river`) and the `indicators` event; see [outputs](6-what-it-writes.md).
 
 A plugin never touches the renderer: it reads its copy of the world and answers with changes
-(go-simulator's [writing plugins](https://github.com/akrck02/go-simulator/blob/main/docs/4-guides/4-writing-plugins.md)).
+(Go Simulator's [writing plugins](https://github.com/akrck02/go-simulator/blob/main/docs/4-guides/4-writing-plugins.md)).
 Shapes are in world units on the ground plane (x, z, in kilometres) and fields in physical units, as
-go-simulator's [vocabulary](https://github.com/akrck02/go-simulator/blob/main/docs/5-reference/1-vocabulary-and-conditions.md) lists.
+Go Simulator's [vocabulary](https://github.com/akrck02/go-simulator/blob/main/docs/5-reference/1-vocabulary-and-conditions.md) lists.
 
 ## What travels each year
 
@@ -39,7 +39,7 @@ The same scenario and `seed` grow the same town: a test grows a place twice and 
 
 The pictures of the river town (the town at the top of the README, the four years, the chart, the
 walls, the streets, the floors and the river) were drawn from the plugin's own answers. A small
-throwaway program, kept outside the repository, ran the real plugin inside a go-simulator host with
+throwaway program, kept outside the repository, ran the real plugin inside a Go Simulator host with
 the rules file in [getting started](3-getting-started.md#a-whole-rules-file), stepped it year by
 year to year 100, kept every year's `indicators` event and, every five years, the city's entities,
 and drew them from above.
