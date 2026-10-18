@@ -26,7 +26,7 @@ the other rules find it by their <code>city</code> parameter, so several cities 
 Rules run in the order of the rules file, usually:</p>
 
 <p align="center">
-  <img alt="A year in nine steps, in the order of the rules file: 1 demand (city), 2 densify, 3 expand, 4 walls, 5 prune_empty_streets, 6 split_large_blocks, 7 space_syntax, 8 squares, 9 indicators; steps 5 to 8 run every few years; after every request the plugin publishes only the entities that changed" src="images/year.svg" width="880">
+  <img alt="A year in nine steps, in the order of the rules file: 1 demand (city), 2 densify, 3 expand, 4 walls, 5 prune_empty_streets, 6 split_large_blocks, 7 space_syntax, 8 squares, 9 indicators; steps 5 to 8 run every few years; after every request the plugin publishes only the entities that changed" src="./images/year.svg" width="880">
 </p>
 
 <ol>
@@ -72,7 +72,7 @@ changed since the last time travel to the host.</p>
 <h2 id="plots-fill-up-then-the-town-spreads">Plots fill up, then the town spreads</h2>
 
 <p align="center">
-  <img alt="Left: four narrow, deep plots side by side on a street, the front and the depth marked, each with a house of a different depth at the front. Right: one plot over the years: a house at the front, the house taking the back of the plot, the house gaining floors, and in a dense core a second building at the back round a yard" src="images/model.svg" width="880">
+  <img alt="Left: four narrow, deep plots side by side on a street, the front and the depth marked, each with a house of a different depth at the front. Right: one plot over the years: a house at the front, the house taking the back of the plot, the house gaining floors, and in a dense core a second building at the back round a yard" src="./images/model.svg" width="880">
 </p>
 
 <p>A plot is a burgage: a narrow front on a street and a long depth behind it. Densify works on the
@@ -85,7 +85,7 @@ back streets come later, when the frontages near the centre run out.</p>
 <h2 id="walls-and-the-ring-road">Walls and the ring road</h2>
 
 <p align="center">
-  <img alt="The middle of the river town at four years: year 30, no wall yet; year 35, the first wall round what is built; year 50, a new wall further out, and the first one a ring road; year 100, the blocks inside filled, with a belt of gardens and convents along the ring" src="images/walls.svg" width="880">
+  <img alt="The middle of the river town at four years: year 30, no wall yet; year 35, the first wall round what is built; year 50, a new wall further out, and the first one a ring road; year 100, the blocks inside filled, with a belt of gardens and convents along the ring" src="./images/walls.svg" width="880">
 </p>
 
 <p>The river town reaches 4,000 people, its <code>first_wall.population</code>, in year 33, and the wall goes up
@@ -109,13 +109,13 @@ the core; wide plots with gardens and lower houses outside. Districts can set th
 </ul>
 
 <p align="center">
-  <img alt="The middle of the river town at year 100, every house shaded by its floors: four floors round the crossing of the roads and in a few blocks south of the river, fewer further out" src="images/floors.svg" width="880">
+  <img alt="The middle of the river town at year 100, every house shaded by its floors: four floors round the crossing of the roads and in a few blocks south of the river, fewer further out" src="./images/floors.svg" width="880">
 </p>
 
 <h2 id="streets">Streets</h2>
 
 <p align="center">
-  <img alt="The river town at year 100 with its streets coloured by class: roads that reach the town, quays along both banks of the river, a ring road where the first wall stood, alleys across large blocks, streets the town opened, and two main streets; bridges and squares are marked" src="images/streets.svg" width="880">
+  <img alt="The river town at year 100 with its streets coloured by class: roads that reach the town, quays along both banks of the river, a ring road where the first wall stood, alleys across large blocks, streets the town opened, and two main streets; bridges and squares are marked" src="./images/streets.svg" width="880">
 </p>
 
 <p>Every street piece has a class (see <a href="./what-it-writes">outputs</a>). Roads come with the inputs;
@@ -133,7 +133,7 @@ workshops (mills, tanners), and bridges are spaced and square to the river. The 
 as a <code>river</code> entity and quays as streets of class <code>quay</code>.</p>
 
 <p align="center">
-  <img alt="A close look at the river in the middle of the river town at year 100: quays on both banks, bridges square to the river, grey workshops along the water among the houses, and shops along the roads" src="images/river.svg" width="880">
+  <img alt="A close look at the river in the middle of the river town at year 100: quays on both banks, bridges square to the river, grey workshops along the water among the houses, and shops along the roads" src="./images/river.svg" width="880">
 </p>
 
 <p>With <code>river: {from_world: true}</code> the town also takes the rivers the world already has, such as the
