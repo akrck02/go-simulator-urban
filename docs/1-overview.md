@@ -1,6 +1,6 @@
 <p align="center"><img alt="" src="images/logo.svg" width="120"></p>
 
-# Welcome to go-simulator-urban 👋
+# Welcome to Go Urban Simulator 👋
 
 **The urban plugin grows towns**, year after year: a village where roads meet becomes a town with streets of its own, squares, bridges and walls.
 
@@ -10,7 +10,7 @@ You give it a place (the area it may use, the roads and rivers already there) an
 
 ## Is it for me?
 
-- ✅ You use [go-simulator](https://github.com/akrck02/go-simulator) and want **towns that grow**.
+- ✅ You use [Go Simulator](https://github.com/akrck02/go-simulator) and want **towns that grow**.
 - ✅ You want to **set it up by writing a rules file**: no programming needed.
 - ✅ You are curious about **the science** behind it: the pages explain the model with pictures.
 
@@ -69,21 +69,21 @@ The menu on the left (or the files in `docs/`) follows this order.
 
 ## The family
 
-go-simulator-urban is one of a family of small projects that work together:
+Go Urban Simulator is one of a family of small projects that work together:
 
 | Project | What it does |
 |---|---|
-| [go-renderer](https://github.com/akrck02/go-renderer) | draws 3D scenes and flat interfaces |
-| [go-ui](https://github.com/akrck02/go-ui) | buttons, panels and whole applications |
-| [go-ui-android](https://github.com/akrck02/go-ui-android) | Android apps that look like Android's own |
-| [go-sound](https://github.com/akrck02/go-sound) | sound and music |
-| [go-scene-builder](https://github.com/akrck02/go-scene-builder) | 3D scenes from a flat map |
-| [go-simulator](https://github.com/akrck02/go-simulator) | simulations that change a scene |
-| [go-simulator-terrain](https://github.com/akrck02/go-simulator-terrain) | ground shaped by rivers |
-| [go-simulator-climate](https://github.com/akrck02/go-simulator-climate) | weather and biomes |
-| [go-simulator-flora](https://github.com/akrck02/go-simulator-flora) | forests that grow |
-| **go-simulator-urban** (this one) | towns that grow |
-| [go-simulator-motion](https://github.com/akrck02/go-simulator-motion) | a scene that moves |
-| [go-3ds](https://github.com/akrck02/go-3ds) | Go on the Nintendo 3DS |
+| [Go Renderer](https://github.com/akrck02/go-renderer) | draws 3D scenes and flat interfaces |
+| [Go UI](https://github.com/akrck02/go-ui) | buttons, panels and whole applications |
+| [Go UI for Android](https://github.com/akrck02/go-ui-android) | Android apps that look like Android's own |
+| [Go Sound](https://github.com/akrck02/go-sound) | sound and music |
+| [Go Scene Builder](https://github.com/akrck02/go-scene-builder) | 3D scenes from a flat map |
+| [Go Simulator](https://github.com/akrck02/go-simulator) | simulations that change a scene |
+| [Go Terrain Simulator](https://github.com/akrck02/go-simulator-terrain) | ground shaped by rivers |
+| [Go Climate Simulator](https://github.com/akrck02/go-simulator-climate) | weather and biomes |
+| [Go Flora Simulator](https://github.com/akrck02/go-simulator-flora) | forests that grow |
+| **Go Urban Simulator** (this one) | towns that grow |
+| [Go Motion Simulator](https://github.com/akrck02/go-simulator-motion) | a scene that moves |
+| [Go for 3DS](https://github.com/akrck02/go-3ds) | Go on the Nintendo 3DS |
 
 > ⚠️ All of them are **educational experiments**, written with an AI assistant and pending review by their author: good for learning and playing, not for production.

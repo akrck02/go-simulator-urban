@@ -4,7 +4,7 @@
 
 # Go urban simulator
 
-**Pre-industrial towns that grow year by year, as a plugin for [go-simulator](https://github.com/akrck02/go-simulator).**
+**Pre-industrial towns that grow year by year, as a plugin for [Go Simulator](https://github.com/akrck02/go-simulator).**
 Streets, burgage plots, densification, walls, squares and space syntax, on real relief. Every rule
 comes from a published model (Conzen 1960; Weber et al. 2009; Hillier and Iida 2005; Siksna 1997…);
 the only rule of its own is the walls', because no published model simulates them.
@@ -60,7 +60,7 @@ reviewed it line by line. Treat it as a working draft, not as code I vouch for.
 
 ## 🚀 Quick start
 
-Clone [go-simulator](https://github.com/akrck02/go-simulator) and go-renderer next to this
+Clone [Go Simulator](https://github.com/akrck02/go-simulator) and Go Renderer next to this
 repository, and install GEOS (`brew install geos` or `sudo apt install libgeos-dev`). In a rules
 file, the `city` rule names the town and the other rules find it by that name:
 
@@ -84,10 +84,10 @@ go run ./cmd/simulate -rules <rules.yaml> -output results/
 ## 🔍 How it works
 
 <p align="center">
-  <img alt="A rules file, the scenario, the GeoJSON features and the relief go into go-simulator, the host; every year it sends the urban plugin a step over standard input and output, and the plugin answers with changes: entities (streets, plots, houses, walls, squares, bridges) and an indicators event" src="docs/images/how-it-works.svg" width="880">
+  <img alt="A rules file, the scenario, the GeoJSON features and the relief go into Go Simulator, the host; every year it sends the urban plugin a step over standard input and output, and the plugin answers with changes: entities (streets, plots, houses, walls, squares, bridges) and an indicators event" src="docs/images/how-it-works.svg" width="880">
 </p>
 
-go-simulator keeps the world and moves the clock, one year a step. The plugin keeps its cities, runs
+Go Simulator keeps the world and moves the clock, one year a step. The plugin keeps its cities, runs
 the year's rules in the order of the rules file and answers with the entities that changed; it never
 touches the renderer. [More on how it works →](docs/7-how-it-works.md)
 
@@ -101,5 +101,5 @@ touches the renderer. [More on how it works →](docs/7-how-it-works.md)
 | [The scenario](docs/4-writing-a-scenario.md) | Every key of the city's scenario, with its default, and the input features. |
 | [Outputs](docs/6-what-it-writes.md) | The entities, properties, events and indicators the city publishes. |
 | [Testing](docs/9-testing.md) | The six synthetic places, what is checked on every one, and profiling. |
-| [How it works](docs/7-how-it-works.md) | How the plugin fits go-simulator, and how the pictures were made. |
+| [How it works](docs/7-how-it-works.md) | How the plugin fits Go Simulator, and how the pictures were made. |
 | [Rules reference](docs/8-rules-reference.md) | Every rule and parameter, generated from the plugin's own description. |

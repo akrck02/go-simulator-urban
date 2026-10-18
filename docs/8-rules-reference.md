@@ -3,7 +3,7 @@
 Version 0.1.0, protocol 2. Pre-industrial urban growth, year by year, on real relief (Weber et al. 2009; Conzen 1960; Hillier and Iida 2005).
 
 This reference is generated from what the plugin itself tells the host (the `describe` message), so it always
-matches the code. Parameters go under `with:` in a rules file; see go-simulator's
+matches the code. Parameters go under `with:` in a rules file; see Go Simulator's
 [rules file reference](https://github.com/akrck02/go-simulator/blob/main/docs/4-guides/1-rules-files.md).
 
 | Rule | What it does |

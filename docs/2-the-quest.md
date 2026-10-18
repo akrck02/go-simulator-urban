@@ -94,7 +94,7 @@ go run ./plain
 ### Looking at the town
 
 A run without a window writes the town as GeoJSON: buildings with their height, parcels, streets,
-squares, walls, gates and the river. go-scene-builder turns that into a 3D scene with a **style**.
+squares, walls, gates and the river. Go Scene Builder turns that into a 3D scene with a **style**.
 `town.yaml`:
 
 ```yaml
@@ -447,7 +447,7 @@ it came out as planned.
 |---|---|---|
 | Taller in the core | ⭐ | `density` and `rare_floors` ([scenario](4-writing-a-scenario.md)) |
 | Curvier streets | ⭐ | `organic: {wander_degrees: 20}` |
-| Watch it grow live | ⭐⭐ | `go-simulator/cmd/simulator` with a `scene_style` (go-simulator's [rules files](https://github.com/akrck02/go-simulator/blob/main/docs/4-guides/1-rules-files.md#scene_style)) |
+| Watch it grow live | ⭐⭐ | `go-simulator/cmd/simulator` with a `scene_style` (Go Simulator's [rules files](https://github.com/akrck02/go-simulator/blob/main/docs/4-guides/1-rules-files.md#scene_style)) |
 | The town on an island of your own | ⭐⭐⭐ | The [terrain](https://github.com/akrck02/go-simulator-terrain/blob/main/docs/2-the-quest.md) and [flora](https://github.com/akrck02/go-simulator-flora/blob/main/docs/2-the-quest.md) quests, with `tree_nodes` to clear the forest |
 
 ## Troubleshooting
