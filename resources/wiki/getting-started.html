@@ -2,8 +2,8 @@
 
 <h2 id="the-folders-it-needs">The folders it needs</h2>
 
-<p>The plugin is developed next to the projects it uses: <code>go.mod</code> replaces go-simulator and
-go-renderer with the folders beside this one. Clone them side by side:</p>
+<p>The plugin is developed next to the projects it uses: <code>go.mod</code> replaces Go Simulator and
+Go Renderer with the folders beside this one. Clone them side by side:</p>
 <pre><code>go-renderer/
 go-simulator/
 go-simulator-urban/   ← this repository
@@ -113,11 +113,11 @@ terrain plugin can go first instead. Every key is in <a href="./writing-a-scenar
 go run ./cmd/simulate -rules &lt;rules.yaml&gt; -output results/
 </code></pre>
 
-<p>With go-simulator&rsquo;s viewer, over a glTF scene of the ground, which the town is drawn on as it grows:</p>
+<p>With Go Simulator&rsquo;s viewer, over a glTF scene of the ground, which the town is drawn on as it grows:</p>
 <pre><code class="language-bash">go run ./cmd/simulator -rules &lt;rules.yaml&gt; scene.glb
 </code></pre>
 
-<p>go-simulator&rsquo;s <a href="https://github.com/akrck02/go-simulator/blob/main/docs/4-guides/2-running.md" target="_blank">running guide</a>
+<p>Go Simulator&rsquo;s <a href="https://github.com/akrck02/go-simulator/blob/main/docs/4-guides/2-running.md" target="_blank">running guide</a>
 has the rest: snapshots, objectives and the viewer&rsquo;s keys.</p>
 
 <h2 id="the-tests">The tests</h2>
