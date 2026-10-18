@@ -15,6 +15,7 @@ jobs:
           title: "Go Urban Simulator"
           description: "The urban plugin of go-simulator: towns that grow"
           logo: "./docs/images/logo.svg"
+          accent: "#F2A541"
           path: "./docs"
           isObsidianProject: false
           showFooter: true
